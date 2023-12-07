@@ -13,6 +13,14 @@ function fetchJsonDataAndInitialize() {
 // On window load
 window.onload = fetchJsonDataAndInitialize;
 
+// Function to initialize dropdowns with only 'All' option
+function initializeDropdowns() {
+    const dropdownIds = ['nameFilter', 'pronounsFilter', 'majorFilter', 'schoolFilter', 'minorFilter', 'phoneFilter'];
+    dropdownIds.forEach(dropdownId => {
+        populateDropdown(dropdownId, new Set(['All']));
+    });
+}
+
 // Function to populate dropdowns
 function populateDropdowns(data) {
     populateDropdown('nameFilter', new Set(data.map(item => item['First and Last Name'])));
