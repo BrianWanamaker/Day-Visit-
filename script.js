@@ -69,8 +69,18 @@ function loadTableData(items) {
         let pronounsCell = row.insertCell();
         pronounsCell.textContent = item['What are your pronouns?'];
 
+        let schoolCell = row.insertCell();
+        schoolCell.textContent = item['Major(s)'];
+
         let majorCell = row.insertCell();
-        majorCell.textContent = item['Major(s)'];
+        majorCell.textContent = item['Please select which school your major(s) is in.'];
+
+        let minorCell = row.insertCell();
+        minorCell.textContent = item['Minor(s) if applicable'];
+
+        let phoneCell = row.insertCell();
+        phoneCell.textContent = item['Cell Phone Number'];
+
 
         // Add more cells for additional data columns
     });
