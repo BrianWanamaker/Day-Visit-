@@ -19,6 +19,7 @@ function populateDropdowns(data) {
     populateDropdown('nameFilter', new Set(data.map(item => item['First and Last Name'])));
     populateDropdown('pronounsFilter', new Set(data.map(item => item['What are your pronouns?'])));
     populateDropdown('majorFilter', new Set(data.map(item => item['Major(s)'])));
+    populateDropdown('majorFilter', new Set(data.map(item => item['Major(s)'])));
     // Add more dropdowns as needed
 }
 
@@ -37,12 +38,18 @@ function filterResults() {
     const nameFilter = document.getElementById('nameFilter').value;
     const pronounsFilter = document.getElementById('pronounsFilter').value;
     const majorFilter = document.getElementById('majorFilter').value;
+    const schoolFilter = document.getElementById('schoolFilter').value;
+    const minorFilter = document.getElementById('minorFilter').value;
+    const phoneFilter = document.getElementById('minorFilter').value;
     // Add more filters as needed
 
     const filteredData = jsonData.filter(item =>
         (item['First and Last Name'] === nameFilter || nameFilter === 'All') &&
         (item['What are your pronouns?'] === pronounsFilter || pronounsFilter === 'All') &&
         (item['Major(s)'] === majorFilter || majorFilter === 'All')
+        (item['Please select which school your major(s) is in.'] === schoolFilter || schoolFilter === 'All')
+        (item['Minor(s) if applicable'] === minorFilter || minorFilter === 'All')
+        (item['Cell Phone Number'] === phoneFilter || phoneFilter === 'All')
         // Add more conditions for additional filters
     );
 
