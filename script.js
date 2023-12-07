@@ -3,7 +3,6 @@ function fetchJsonDataAndInitialize() {
     fetch("responses.json")
         .then(response => response.json())
         .then(data => {
-            // Now jsonData contains your JSON data
             const jsonData = data;
             populateDropdowns(jsonData);
             loadTableData(jsonData);
