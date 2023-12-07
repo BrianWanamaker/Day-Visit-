@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Directory</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <h1>Student Directory</h1>
+
+    <!-- Dropdown filters -->
+    <div>
+        <select id="nameFilter">
+            <option value="All">All Names</option>
+        </select>
+        <select id="pronounsFilter">
+            <option value="All">All Pronouns</option>
+        </select>
+        <select id="majorFilter">
+            <option value="All">All Majors</option>
+        </select>
+        <!-- Add more dropdowns as needed -->
+    </div>
+
+    <button onclick="filterResults()">Filter Results</button>
+
+    <table id="studentTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Pronouns</th>
+                <th>Major</th>
+                <!-- Add more th elements for each column -->
+            </tr>
+        </thead>
+        <tbody id="tableData">
+            <!-- Table data will be dynamically inserted here -->
+        </tbody>
+    </table>
+    <script src="script.js"></script>
+</body>
+</html>
