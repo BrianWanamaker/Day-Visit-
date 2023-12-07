@@ -19,7 +19,9 @@ function populateDropdowns(data) {
     populateDropdown('nameFilter', new Set(data.map(item => item['First and Last Name'])));
     populateDropdown('pronounsFilter', new Set(data.map(item => item['What are your pronouns?'])));
     populateDropdown('majorFilter', new Set(data.map(item => item['Major(s)'])));
-    populateDropdown('majorFilter', new Set(data.map(item => item['Major(s)'])));
+    populateDropdown('schoolFilter', new Set(data.map(item => item['Please select which school your major(s) is in.'])));
+    populateDropdown('minorFilter', new Set(data.map(item => item['Minor(s) if applicable'])));
+    populateDropdown('phoneFilter', new Set(data.map(item => item['Cell Phone Number'])));
     // Add more dropdowns as needed
 }
 
@@ -40,7 +42,7 @@ function filterResults() {
     const majorFilter = document.getElementById('majorFilter').value;
     const schoolFilter = document.getElementById('schoolFilter').value;
     const minorFilter = document.getElementById('minorFilter').value;
-    const phoneFilter = document.getElementById('minorFilter').value;
+    const phoneFilter = document.getElementById('phoneFilter').value;
     // Add more filters as needed
 
     const filteredData = jsonData.filter(item =>
