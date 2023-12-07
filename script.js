@@ -1,11 +1,10 @@
-let jsonData = [];
-
+let jsonData = []
 function fetchJsonDataAndInitialize() {
     fetch("responses.json")
         .then(response => response.json())
         .then(data => {
             jsonData = data;
-            initializeDropdowns(); // Initialize dropdowns with 'All' option
+            populateDropdowns(jsonData);
             loadTableData(jsonData);
         })
         .catch(error => console.error('Error loading JSON data:', error));
@@ -19,53 +18,51 @@ function initializeDropdowns() {
     const dropdownIds = ['nameFilter', 'pronounsFilter', 'majorFilter', 'schoolFilter', 'minorFilter', 'phoneFilter'];
     dropdownIds.forEach(dropdownId => {
         populateDropdown(dropdownId, new Set(['All']));
-        document.getElementById(dropdownId).addEventListener('change', updateTableAndDropdowns);
     });
 }
 
-// Function to populate a dropdown
+// Function to populate dropdowns
+function populateDropdowns(data) {
+    populateDropdown('nameFilter', new Set(data.map(item => item['First and Last Name'])));
+    populateDropdown('pronounsFilter', new Set(data.map(item => item['What are your pronouns?'])));
+    populateDropdown('majorFilter', new Set(data.map(item => item['Major(s)'])));
+    populateDropdown('schoolFilter', new Set(data.map(item => item['Please select which school your major(s) is in.'])));
+    populateDropdown('minorFilter', new Set(data.map(item => item['Minor(s) if applicable'])));
+    populateDropdown('phoneFilter', new Set(data.map(item => item['Cell Phone Number'])));
+    // Add more dropdowns as needed
+}
+
+// Helper function to populate a dropdown
 function populateDropdown(dropdownId, options) {
     const dropdown = document.getElementById(dropdownId);
-    dropdown.innerHTML = ''; // Clear existing options
     options.forEach(option => {
-        dropdown.options.add(new Option(option, option));
+        if (option) { // Check if the option is not empty
+            dropdown.options.add(new Option(option, option));
+        }
     });
 }
 
-// Function to update the table and other dropdowns based on the current selection
-function updateTableAndDropdowns() {
-    const filteredData = getFilteredData();
-    loadTableData(filteredData);
-    updateDropdowns(filteredData);
-}
-
-// Function to get filtered data based on current dropdown selections
-function getFilteredData() {
+// Function to filter and display results
+function filterResults() {
     const nameFilter = document.getElementById('nameFilter').value;
     const pronounsFilter = document.getElementById('pronounsFilter').value;
     const majorFilter = document.getElementById('majorFilter').value;
     const schoolFilter = document.getElementById('schoolFilter').value;
     const minorFilter = document.getElementById('minorFilter').value;
     const phoneFilter = document.getElementById('phoneFilter').value;
+    // Add more filters as needed
 
-    return jsonData.filter(item =>
-        (nameFilter === 'All' || item['First and Last Name'] === nameFilter) &&
-        (pronounsFilter === 'All' || item['What are your pronouns?'] === pronounsFilter) &&
-        (majorFilter === 'All' || item['Major(s)'] === majorFilter) &&
-        (schoolFilter === 'All' || item['Please select which school your major(s) is in.'] === schoolFilter) &&
-        (minorFilter === 'All' || item['Minor(s) if applicable'] === minorFilter) &&
-        (phoneFilter === 'All' || item['Cell Phone Number'] === phoneFilter)
+    const filteredData = jsonData.filter(item =>
+        (item['First and Last Name'] === nameFilter || nameFilter === 'All') &&
+        (item['What are your pronouns?'] === pronounsFilter || pronounsFilter === 'All') &&
+        (item['Major(s)'] === majorFilter || majorFilter === 'All')&&
+        (item['Please select which school your major(s) is in.'] === schoolFilter || schoolFilter === 'All')&&
+        (item['Minor(s) if applicable'] === minorFilter || minorFilter === 'All')&&
+        (item['Cell Phone Number'] === phoneFilter || phoneFilter === 'All')
+        // Add more conditions for additional filters
     );
-}
 
-// Function to update dropdowns based on filtered data
-function updateDropdowns(filteredData) {
-    populateDropdown('nameFilter', new Set(['All'].concat(filteredData.map(item => item['First and Last Name']))));
-    populateDropdown('pronounsFilter', new Set(['All'].concat(filteredData.map(item => item['What are your pronouns?']))));
-    populateDropdown('majorFilter', new Set(['All'].concat(filteredData.map(item => item['Major(s)']))));
-    populateDropdown('schoolFilter', new Set(['All'].concat(filteredData.map(item => item['Please select which school your major(s) is in.']))));
-    populateDropdown('minorFilter', new Set(['All'].concat(filteredData.map(item => item['Minor(s) if applicable']))));
-    populateDropdown('phoneFilter', new Set(['All'].concat(filteredData.map(item => item['Cell Phone Number']))));
+    loadTableData(filteredData);
 }
 
 // Function to load data into the table
@@ -75,18 +72,17 @@ function loadTableData(items) {
 
     items.forEach(item => {
         let row = table.insertRow();
-
         let nameCell = row.insertCell();
         nameCell.textContent = item['First and Last Name'];
 
         let pronounsCell = row.insertCell();
         pronounsCell.textContent = item['What are your pronouns?'];
 
-        let majorCell = row.insertCell();
-        majorCell.textContent = item['Major(s)'];
-
         let schoolCell = row.insertCell();
-        schoolCell.textContent = item['Please select which school your major(s) is in.'];
+        schoolCell.textContent = item['Major(s)'];
+
+        let majorCell = row.insertCell();
+        majorCell.textContent = item['Please select which school your major(s) is in.'];
 
         let minorCell = row.insertCell();
         minorCell.textContent = item['Minor(s) if applicable'];
@@ -94,6 +90,7 @@ function loadTableData(items) {
         let phoneCell = row.insertCell();
         phoneCell.textContent = item['Cell Phone Number'];
 
-        // Add additional cells for any other data columns you have
+
+        // Add more cells for additional data columns
     });
 }
