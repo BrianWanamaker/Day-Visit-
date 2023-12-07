@@ -1,9 +1,9 @@
-
+let jsonData = []
 function fetchJsonDataAndInitialize() {
     fetch("responses.json")
         .then(response => response.json())
         .then(data => {
-            const jsonData = data;
+            jsonData = data;
             populateDropdowns(jsonData);
             loadTableData(jsonData);
         })
