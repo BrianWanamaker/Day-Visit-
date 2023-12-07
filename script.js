@@ -48,9 +48,9 @@ function filterResults() {
     const filteredData = jsonData.filter(item =>
         (item['First and Last Name'] === nameFilter || nameFilter === 'All') &&
         (item['What are your pronouns?'] === pronounsFilter || pronounsFilter === 'All') &&
-        (item['Major(s)'] === majorFilter || majorFilter === 'All')
-        (item['Please select which school your major(s) is in.'] === schoolFilter || schoolFilter === 'All')
-        (item['Minor(s) if applicable'] === minorFilter || minorFilter === 'All')
+        (item['Major(s)'] === majorFilter || majorFilter === 'All')&&
+        (item['Please select which school your major(s) is in.'] === schoolFilter || schoolFilter === 'All')&&
+        (item['Minor(s) if applicable'] === minorFilter || minorFilter === 'All')&&
         (item['Cell Phone Number'] === phoneFilter || phoneFilter === 'All')
         // Add more conditions for additional filters
     );
