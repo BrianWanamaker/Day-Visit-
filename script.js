@@ -1,99 +1,102 @@
-let jsonData = [];
 
-function fetchJsonDataAndInitialize() {
-    fetch("responses.json")
-        .then(response => response.json())
-        .then(data => {
-            jsonData = data;
-            initializeDropdowns(); // Initialize dropdowns with 'All' option
-            loadTableData(jsonData);
-        })
-        .catch(error => console.error('Error loading JSON data:', error));
-}
+document.addEventListener('DOMContentLoaded', (event) => {
+    let jsonData = [];
 
-// On window load
-window.onload = fetchJsonDataAndInitialize;
+    function fetchJsonDataAndInitialize() {
+        fetch("responses.json")
+            .then(response => response.json())
+            .then(data => {
+                jsonData = data;
+                initializeDropdowns(); // Initialize dropdowns with 'All' option
+                loadTableData(jsonData);
+            })
+            .catch(error => console.error('Error loading JSON data:', error));
+    }
 
-// Function to initialize dropdowns with only 'All' option
-function initializeDropdowns() {
-    const dropdownIds = ['nameFilter', 'pronounsFilter', 'majorFilter', 'schoolFilter', 'minorFilter', 'phoneFilter'];
-    dropdownIds.forEach(dropdownId => {
-        populateDropdown(dropdownId, new Set(['All']));
-        document.getElementById(dropdownId).addEventListener('change', updateTableAndDropdowns);
-    });
-}
+    // On window load
+    window.onload = fetchJsonDataAndInitialize;
 
-// Function to populate a dropdown
-function populateDropdown(dropdownId, options) {
-    const dropdown = document.getElementById(dropdownId);
-    dropdown.innerHTML = ''; // Clear existing options
-    options.forEach(option => {
-        dropdown.options.add(new Option(option, option));
-    });
-}
+    // Function to initialize dropdowns with only 'All' option
+    function initializeDropdowns() {
+        const dropdownIds = ['nameFilter', 'pronounsFilter', 'majorFilter', 'schoolFilter', 'minorFilter', 'phoneFilter'];
+        dropdownIds.forEach(dropdownId => {
+            populateDropdown(dropdownId, new Set(['All']));
+            document.getElementById(dropdownId).addEventListener('change', updateTableAndDropdowns);
+        });
+    }
 
-// Function to update the table and other dropdowns based on the current selection
-function updateTableAndDropdowns() {
-    const filteredData = getFilteredData();
-    loadTableData(filteredData);
-    updateDropdowns(filteredData);
-}
+    // Function to populate a dropdown
+    function populateDropdown(dropdownId, options) {
+        const dropdown = document.getElementById(dropdownId);
+        dropdown.innerHTML = ''; // Clear existing options
+        options.forEach(option => {
+            dropdown.options.add(new Option(option, option));
+        });
+    }
 
-// Function to get filtered data based on current dropdown selections
-function getFilteredData() {
-    const nameFilter = document.getElementById('nameFilter').value;
-    const pronounsFilter = document.getElementById('pronounsFilter').value;
-    const majorFilter = document.getElementById('majorFilter').value;
-    const schoolFilter = document.getElementById('schoolFilter').value;
-    const minorFilter = document.getElementById('minorFilter').value;
-    const phoneFilter = document.getElementById('phoneFilter').value;
+    // Function to update the table and other dropdowns based on the current selection
+    function updateTableAndDropdowns() {
+        const filteredData = getFilteredData();
+        loadTableData(filteredData);
+        updateDropdowns(filteredData);
+    }
 
-    return jsonData.filter(item =>
-        (nameFilter === 'All' || item['First and Last Name'] === nameFilter) &&
-        (pronounsFilter === 'All' || item['What are your pronouns?'] === pronounsFilter) &&
-        (majorFilter === 'All' || item['Major(s)'] === majorFilter) &&
-        (schoolFilter === 'All' || item['Please select which school your major(s) is in.'] === schoolFilter) &&
-        (minorFilter === 'All' || item['Minor(s) if applicable'] === minorFilter) &&
-        (phoneFilter === 'All' || item['Cell Phone Number'] === phoneFilter)
-    );
-}
+    // Function to get filtered data based on current dropdown selections
+    function getFilteredData() {
+        const nameFilter = document.getElementById('nameFilter').value;
+        const pronounsFilter = document.getElementById('pronounsFilter').value;
+        const majorFilter = document.getElementById('majorFilter').value;
+        const schoolFilter = document.getElementById('schoolFilter').value;
+        const minorFilter = document.getElementById('minorFilter').value;
+        const phoneFilter = document.getElementById('phoneFilter').value;
 
-// Function to update dropdowns based on filtered data
-function updateDropdowns(filteredData) {
-    populateDropdown('nameFilter', new Set(['All'].concat(filteredData.map(item => item['First and Last Name']))));
-    populateDropdown('pronounsFilter', new Set(['All'].concat(filteredData.map(item => item['What are your pronouns?']))));
-    populateDropdown('majorFilter', new Set(['All'].concat(filteredData.map(item => item['Major(s)']))));
-    populateDropdown('schoolFilter', new Set(['All'].concat(filteredData.map(item => item['Please select which school your major(s) is in.']))));
-    populateDropdown('minorFilter', new Set(['All'].concat(filteredData.map(item => item['Minor(s) if applicable']))));
-    populateDropdown('phoneFilter', new Set(['All'].concat(filteredData.map(item => item['Cell Phone Number']))));
-}
+        return jsonData.filter(item =>
+            (nameFilter === 'All' || item['First and Last Name'] === nameFilter) &&
+            (pronounsFilter === 'All' || item['What are your pronouns?'] === pronounsFilter) &&
+            (majorFilter === 'All' || item['Major(s)'] === majorFilter) &&
+            (schoolFilter === 'All' || item['Please select which school your major(s) is in.'] === schoolFilter) &&
+            (minorFilter === 'All' || item['Minor(s) if applicable'] === minorFilter) &&
+            (phoneFilter === 'All' || item['Cell Phone Number'] === phoneFilter)
+        );
+    }
 
-// Function to load data into the table
-function loadTableData(items) {
-    const table = document.getElementById('tableData');
-    table.innerHTML = ''; // Clear the table first
+    // Function to update dropdowns based on filtered data
+    function updateDropdowns(filteredData) {
+        populateDropdown('nameFilter', new Set(['All'].concat(filteredData.map(item => item['First and Last Name']))));
+        populateDropdown('pronounsFilter', new Set(['All'].concat(filteredData.map(item => item['What are your pronouns?']))));
+        populateDropdown('majorFilter', new Set(['All'].concat(filteredData.map(item => item['Major(s)']))));
+        populateDropdown('schoolFilter', new Set(['All'].concat(filteredData.map(item => item['Please select which school your major(s) is in.']))));
+        populateDropdown('minorFilter', new Set(['All'].concat(filteredData.map(item => item['Minor(s) if applicable']))));
+        populateDropdown('phoneFilter', new Set(['All'].concat(filteredData.map(item => item['Cell Phone Number']))));
+    }
 
-    items.forEach(item => {
-        let row = table.insertRow();
+    // Function to load data into the table
+    function loadTableData(items) {
+        const table = document.getElementById('tableData');
+        table.innerHTML = ''; // Clear the table first
 
-        let nameCell = row.insertCell();
-        nameCell.textContent = item['First and Last Name'];
+        items.forEach(item => {
+            let row = table.insertRow();
 
-        let pronounsCell = row.insertCell();
-        pronounsCell.textContent = item['What are your pronouns?'];
+            let nameCell = row.insertCell();
+            nameCell.textContent = item['First and Last Name'];
 
-        let majorCell = row.insertCell();
-        majorCell.textContent = item['Major(s)'];
+            let pronounsCell = row.insertCell();
+            pronounsCell.textContent = item['What are your pronouns?'];
 
-        let schoolCell = row.insertCell();
-        schoolCell.textContent = item['Please select which school your major(s) is in.'];
+            let majorCell = row.insertCell();
+            majorCell.textContent = item['Major(s)'];
 
-        let minorCell = row.insertCell();
-        minorCell.textContent = item['Minor(s) if applicable'];
+            let schoolCell = row.insertCell();
+            schoolCell.textContent = item['Please select which school your major(s) is in.'];
 
-        let phoneCell = row.insertCell();
-        phoneCell.textContent = item['Cell Phone Number'];
+            let minorCell = row.insertCell();
+            minorCell.textContent = item['Minor(s) if applicable'];
 
-        // Add additional cells for any other data columns you have
-    });
-}
+            let phoneCell = row.insertCell();
+            phoneCell.textContent = item['Cell Phone Number'];
+
+            // Add additional cells for any other data columns you have
+        });
+    }
+});
