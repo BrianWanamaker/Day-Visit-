@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', (event) => {
     let jsonData = [];
 
@@ -7,14 +6,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
             .then(response => response.json())
             .then(data => {
                 jsonData = data;
-                initializeDropdowns(); // Initialize dropdowns with 'All' option
-                updateDropdowns(jsonData); // Populate dropdowns with data
-                loadTableData(jsonData);
+                console.log("JSON Data Loaded:", jsonData); // Log to verify data
+                initializeDropdowns();
+                updateTableAndDropdowns();
             })
-            .catch(error => console.error('Error loading JSON data:', error));
+            .catch(error => {
+                console.error('Error loading JSON data:', error);
+                console.error('Make sure responses.json is in the correct location and properly formatted.');
+            });
     }
-
-
 
     // On window load
     window.onload = fetchJsonDataAndInitialize;
@@ -23,26 +23,37 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function initializeDropdowns() {
         const dropdownIds = ['nameFilter', 'pronounsFilter', 'majorFilter', 'schoolFilter', 'minorFilter', 'phoneFilter'];
         dropdownIds.forEach(dropdownId => {
-            populateDropdown(dropdownId, new Set(['All']));
+            populateDropdown(dropdownId, ['All'], 'All');
             document.getElementById(dropdownId).addEventListener('change', updateTableAndDropdowns);
         });
     }
 
-    // Function to populate a dropdown
-    function populateDropdown(dropdownId, options) {
+    // Function to populate a dropdown and set the current selection
+    function populateDropdown(dropdownId, options, currentValue) {
         const dropdown = document.getElementById(dropdownId);
         dropdown.innerHTML = ''; // Clear existing options
+
         options.forEach(option => {
-            dropdown.options.add(new Option(option, option));
+            let optionElement = new Option(option, option);
+            optionElement.selected = (option === currentValue); // Set the selected attribute based on currentValue
+            dropdown.appendChild(optionElement);
         });
     }
 
-    // Function to update the table and other dropdowns based on the current selection
+
+    // Function to update the table and dropdowns based on the current selection
     function updateTableAndDropdowns() {
         const filteredData = getFilteredData();
         loadTableData(filteredData);
-        updateDropdowns(filteredData);
+
+        populateDropdown('nameFilter', ['All'].concat(filteredData.map(item => item['First and Last Name'])), document.getElementById('nameFilter').value);
+        populateDropdown('pronounsFilter', ['All'].concat(filteredData.map(item => item['What are your pronouns?'])), document.getElementById('pronounsFilter').value);
+        populateDropdown('majorFilter', ['All'].concat(filteredData.map(item => item['Major(s)'])), document.getElementById('majorFilter').value);
+        populateDropdown('schoolFilter', ['All'].concat(filteredData.map(item => item['Please select which school your major(s) is in.'])), document.getElementById('schoolFilter').value);
+        populateDropdown('minorFilter', ['All'].concat(filteredData.map(item => item['Minor(s) if applicable'])), document.getElementById('minorFilter').value);
+        populateDropdown('phoneFilter', ['All'].concat(filteredData.map(item => item['Cell Phone Number'])), document.getElementById('phoneFilter').value);
     }
+
 
     // Function to get filtered data based on current dropdown selections
     function getFilteredData() {
@@ -65,12 +76,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Function to update dropdowns based on filtered data
     function updateDropdowns(filteredData) {
-        populateDropdown('nameFilter', new Set(['All'].concat(filteredData.map(item => item['First and Last Name']))));
-        populateDropdown('pronounsFilter', new Set(['All'].concat(filteredData.map(item => item['What are your pronouns?']))));
-        populateDropdown('majorFilter', new Set(['All'].concat(filteredData.map(item => item['Major(s)']))));
-        populateDropdown('schoolFilter', new Set(['All'].concat(filteredData.map(item => item['Please select which school your major(s) is in.']))));
-        populateDropdown('minorFilter', new Set(['All'].concat(filteredData.map(item => item['Minor(s) if applicable']))));
-        populateDropdown('phoneFilter', new Set(['All'].concat(filteredData.map(item => item['Cell Phone Number']))));
+        populateDropdown('nameFilter', getUniqueValidOptions(filteredData, 'First and Last Name'), document.getElementById('nameFilter').value);
+        populateDropdown('pronounsFilter', getUniqueValidOptions(filteredData, 'What are your pronouns?'), document.getElementById('pronounsFilter').value);
+        populateDropdown('majorFilter', getUniqueValidOptions(filteredData, 'Major(s)'), document.getElementById('majorFilter').value);
+        populateDropdown('schoolFilter', getUniqueValidOptions(filteredData, 'Please select which school your major(s) is in.'), document.getElementById('schoolFilter').value);
+        populateDropdown('minorFilter', getUniqueValidOptions(filteredData, 'Minor(s) if applicable'), document.getElementById('minorFilter').value);
+        populateDropdown('phoneFilter', getUniqueValidOptions(filteredData, 'Cell Phone Number'), document.getElementById('phoneFilter').value);
+    }
+    
+    // Helper function to get unique and valid options (non-empty and non-undefined) for a dropdown
+    function getUniqueValidOptions(data, key) {
+        let options = new Set();
+        options.add('All'); // Add 'All' as the first option
+        data.forEach(item => {
+            let value = item[key];
+            if (value && value.trim() !== '') { // Check for non-empty and non-undefined values
+                options.add(value);
+            }
+        });
+        return Array.from(options);
     }
 
     // Function to load data into the table
