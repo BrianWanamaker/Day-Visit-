@@ -8,10 +8,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             .then(data => {
                 jsonData = data;
                 initializeDropdowns(); // Initialize dropdowns with 'All' option
+                updateDropdowns(jsonData); // Populate dropdowns with data
                 loadTableData(jsonData);
             })
             .catch(error => console.error('Error loading JSON data:', error));
     }
+
+
 
     // On window load
     window.onload = fetchJsonDataAndInitialize;
