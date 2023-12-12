@@ -33,12 +33,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const dropdown = document.getElementById(dropdownId);
         dropdown.innerHTML = ''; // Clear existing options
 
+        // Add a customized 'All' option based on the dropdownId
+        let allText = `All ${dropdownId.replace('Filter', 's')}`;
+        if (dropdownId === 'phoneFilter') allText = 'All Phone Numbers'; // Special case for phone numbers
+        dropdown.options.add(new Option(allText, 'All', currentValue === 'All'));
+
         options.forEach(option => {
-            let optionElement = new Option(option, option);
-            optionElement.selected = (option === currentValue); // Set the selected attribute based on currentValue
-            dropdown.appendChild(optionElement);
+            if (option !== 'All' && option.trim() !== '') {
+                dropdown.options.add(new Option(option, option, option === currentValue));
+            }
         });
     }
+
 
 
     // Function to update the table and dropdowns based on the current selection
@@ -74,20 +80,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
         );
     }
 
-    // Function to update dropdowns based on filtered data
-    function updateDropdowns(filteredData) {
-        populateDropdown('nameFilter', getUniqueValidOptions(filteredData, 'First and Last Name'), document.getElementById('nameFilter').value);
-        populateDropdown('pronounsFilter', getUniqueValidOptions(filteredData, 'What are your pronouns?'), document.getElementById('pronounsFilter').value);
-        populateDropdown('majorFilter', getUniqueValidOptions(filteredData, 'Major(s)'), document.getElementById('majorFilter').value);
-        populateDropdown('schoolFilter', getUniqueValidOptions(filteredData, 'Please select which school your major(s) is in.'), document.getElementById('schoolFilter').value);
-        populateDropdown('minorFilter', getUniqueValidOptions(filteredData, 'Minor(s) if applicable'), document.getElementById('minorFilter').value);
-        populateDropdown('phoneFilter', getUniqueValidOptions(filteredData, 'Cell Phone Number'), document.getElementById('phoneFilter').value);
-    }
-    
     // Helper function to get unique and valid options (non-empty and non-undefined) for a dropdown
-    function getUniqueValidOptions(data, key) {
+    function getUniqueValidOptions(data, key, allText) {
         let options = new Set();
-        options.add('All'); // Add 'All' as the first option
+        options.add(allText); // Add customized 'All' text
         data.forEach(item => {
             let value = item[key];
             if (value && value.trim() !== '') { // Check for non-empty and non-undefined values
@@ -96,6 +92,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
         return Array.from(options);
     }
+
+    // Function to update dropdowns based on filtered data
+    function updateDropdowns(filteredData) {
+        populateDropdown('nameFilter', getUniqueValidOptions(filteredData, 'First and Last Name', 'All Names'), document.getElementById('nameFilter').value);
+        populateDropdown('pronounsFilter', getUniqueValidOptions(filteredData, 'What are your pronouns?', 'All Pronouns'), document.getElementById('pronounsFilter').value);
+        populateDropdown('majorFilter', getUniqueValidOptions(filteredData, 'Major(s)', 'All Majors'), document.getElementById('majorFilter').value);
+        populateDropdown('schoolFilter', getUniqueValidOptions(filteredData, 'Please select which school your major(s) is in.', 'All Schools'), document.getElementById('schoolFilter').value);
+        populateDropdown('minorFilter', getUniqueValidOptions(filteredData, 'Minor(s) if applicable', 'All Minors'), document.getElementById('minorFilter').value);
+        populateDropdown('phoneFilter', getUniqueValidOptions(filteredData, 'Cell Phone Number', 'All Phone Numbers'), document.getElementById('phoneFilter').value);
+    }
+
 
     // Function to load data into the table
     function loadTableData(items) {
