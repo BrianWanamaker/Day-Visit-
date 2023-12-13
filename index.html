@@ -27,10 +27,20 @@
             <select id="phoneFilter">
                 <option value="All">All Phone Numbers</option>
             </select>
+            <select id="dayFilter">
+                <option value="Monday">Monday</option>
+                <option value="Monday">Tuesday</option>
+                <option value="Monday">Wednesday</option>
+                <option value="Monday">Thursday</option>
+                <option value="Monday">Friday</option>
+            </select>
+            <input type="time" id="startTimeFilter">
+            <input type="time" id="endTimeFilter">
+
             <!-- Add more dropdowns as needed -->
         </div>
 
-        <button>Filter Results</button>
+        <button onclick="applyFilters()">Apply Filters</button>
 
         <table id="studentTable">
             <thead>
@@ -42,6 +52,7 @@
                     <th>Minor</th>
                     <th>Phone Number</th>
                     <th>QU Email Address</th>
+                    <th>Unavailable Times</th>
                     <!-- Add more th elements for each column -->
                 </tr>
             </thead>

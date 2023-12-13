@@ -91,7 +91,6 @@ function updateTableAndDropdowns() {
     initializeDropdowns();
 }
 
-// Function to load data into the table
 function loadTableData(items) {
     const table = document.getElementById('tableData');
     table.innerHTML = ''; // Clear the table first
@@ -105,12 +104,77 @@ function loadTableData(items) {
         row.insertCell().textContent = item['Minor(s) if applicable'];
         row.insertCell().textContent = item['Cell Phone Number'];
         row.insertCell().textContent = item['QU Email Address'];
-        // Add additional cells for any other data columns you have
+
+        // Add a cell for the class schedule
+        let scheduleCell = row.insertCell();
+        scheduleCell.textContent = formatSchedule(item.schedule || []);
     });
 }
+
+function formatSchedule(schedule) {
+    if (!schedule || schedule.length === 0) {
+        return "No schedule info available";
+    }
+    return schedule.map(s => `${s.day}: ${s.startTime} - ${s.endTime}`).join(', ');
+}
+
 
 // Add the event listener for the filter button
 document.addEventListener('DOMContentLoaded', (event) => {
     document.querySelector('button').addEventListener('click', updateTableAndDropdowns);
     fetchJsonDataAndInitialize(); // Call this function directly, no need for window.onload
 });
+
+function parseSchedule(student) {
+    return student["Day(s) of the Week"].map((days, index) => {
+        if (days) {
+            return days.split(',').map(day => ({
+                day: day.trim(),
+                startTime: student["Start Time"][index],
+                endTime: student["End Time"][index]
+            }));
+        }
+        return [];
+    }).flat();
+}
+
+// Example usage:
+let students = jsonData.map(student => ({
+    ...student,
+    schedule: parseSchedule(student)
+}));
+
+function isAvailable(schedule, day, startTime, endTime) {
+    // Convert times to a comparable format (e.g., minutes since midnight)
+    const convertTime = time => {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
+    };
+
+    const start = convertTime(startTime);
+    const end = convertTime(endTime);
+
+    return schedule.every(classSession => {
+        if (classSession.day !== day) return true;
+
+        const classStart = convertTime(classSession.startTime);
+        const classEnd = convertTime(classSession.endTime);
+
+        // Check if the time range overlaps with class time
+        return end <= classStart || start >= classEnd;
+    });
+}
+function applyFilters() {
+    const day = document.getElementById('dayFilter').value;
+    const startTime = document.getElementById('startTimeFilter').value;
+    const endTime = document.getElementById('endTimeFilter').value;
+
+    const availableStudents = students.filter(student =>
+        isAvailable(student.schedule, day, startTime, endTime)
+    );
+
+    // Update the table with availableStudents
+    loadTableData(availableStudents);
+}
+
+
