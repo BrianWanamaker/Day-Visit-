@@ -1,19 +1,17 @@
-document.addEventListener('DOMContentLoaded', (event) => {
-    let jsonData = [];
+let jsonData = []; // This should be at the top level of your script, outside any function
 
-    // Fetch JSON data and initialize dropdowns
-    function fetchJsonDataAndInitialize() {
-        fetch("responses.json")
-            .then(response => response.json())
-            .then(data => {
-                jsonData = data;
-                initializeDropdowns();
-                updateTableAndDropdowns();
-            })
-            .catch(error => {
-                console.error('Error loading JSON data:', error);
-            });
-    }
+function fetchJsonDataAndInitialize() {
+    fetch("responses.json")
+        .then(response => response.json())
+        .then(data => {
+            jsonData = data;
+            initializeDropdowns();
+            updateTableAndDropdowns();
+        })
+        .catch(error => {
+            console.error('Error loading JSON data:', error);
+        });
+}
 
     // Initialize dropdowns with 'All' options
     function initializeDropdowns() {
@@ -38,8 +36,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     window.onload = fetchJsonDataAndInitialize;
-});
-// ... (First half of the JavaScript)
 
 // Function to filter data based on current dropdown selections
 function getFilteredData() {
@@ -88,3 +84,9 @@ function loadTableData(items) {
 
 // Add the event listener for the filter button
 document.querySelector('button').addEventListener('click', updateTableAndDropdowns);
+window.onload = fetchJsonDataAndInitialize;
+// Add the event listener for the filter button
+document.addEventListener('DOMContentLoaded', (event) => {
+    document.querySelector('button').addEventListener('click', updateTableAndDropdowns);
+    fetchJsonDataAndInitialize(); // Call this function directly, no need for window.onload
+});
