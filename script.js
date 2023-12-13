@@ -35,14 +35,26 @@ function initializeDropdowns() {
 // Update a specific dropdown with unique values
 function updateDropdown(dropdownId, category, values) {
     let dropdown = document.getElementById(dropdownId);
+    let selectedValue = dropdown.value; // Get the currently selected value
     let uniqueValues = [...new Set(values.filter(Boolean))]; // Remove empty, null, and duplicate values
     dropdown.innerHTML = ''; // Clear existing options
-    dropdown.appendChild(new Option(`All ${category}`, 'All')); // Add 'All' option
 
+    // Add the currently selected option first if it's not 'All'
+    if (selectedValue !== 'All' && uniqueValues.includes(selectedValue)) {
+        dropdown.appendChild(new Option(selectedValue, selectedValue, true, true));
+    }
+
+    // Add 'All' option
+    dropdown.appendChild(new Option(`All ${category}`, 'All', selectedValue === 'All'));
+
+    // Add remaining unique options
     uniqueValues.forEach(value => {
-        dropdown.appendChild(new Option(value, value));
+        if (value !== selectedValue) {
+            dropdown.appendChild(new Option(value, value));
+        }
     });
 }
+
 
 window.onload = fetchJsonDataAndInitialize;
 
