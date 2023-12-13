@@ -13,29 +13,29 @@ function fetchJsonDataAndInitialize() {
         });
 }
 
-    // Initialize dropdowns with 'All' options
-    function initializeDropdowns() {
-        updateDropdown('nameFilter', 'Names', jsonData.map(item => item['First and Last Name']));
-        updateDropdown('pronounsFilter', 'Pronouns', jsonData.map(item => item['What are your pronouns?']));
-        updateDropdown('majorFilter', 'Majors', jsonData.map(item => item['Major(s)']));
-        updateDropdown('schoolFilter', 'School', jsonData.map(item => item['Please select which school your major(s) is in.']));
-        updateDropdown('minorFilter', 'Minors', jsonData.map(item => item['Minor(s) if applicable']));
-        updateDropdown('phoneFilter', 'Phone Numbers', jsonData.map(item => item['Cell Phone Number']));
-    }
+// Initialize dropdowns with 'All' options
+function initializeDropdowns() {
+    updateDropdown('nameFilter', 'Names', jsonData.map(item => item['First and Last Name']));
+    updateDropdown('pronounsFilter', 'Pronouns', jsonData.map(item => item['What are your pronouns?']));
+    updateDropdown('majorFilter', 'Majors', jsonData.map(item => item['Major(s)']));
+    updateDropdown('schoolFilter', 'School', jsonData.map(item => item['Please select which school your major(s) is in.']));
+    updateDropdown('minorFilter', 'Minors', jsonData.map(item => item['Minor(s) if applicable']));
+    updateDropdown('phoneFilter', 'Phone Numbers', jsonData.map(item => item['Cell Phone Number']));
+}
 
-    // Update a specific dropdown with unique values
-    function updateDropdown(dropdownId, category, values) {
-        let dropdown = document.getElementById(dropdownId);
-        let uniqueValues = [...new Set(values.filter(Boolean))]; // Remove empty, null, and duplicate values
-        dropdown.innerHTML = ''; // Clear existing options
-        dropdown.appendChild(new Option(`All ${category}`, 'All')); // Add 'All' option
+// Update a specific dropdown with unique values
+function updateDropdown(dropdownId, category, values) {
+    let dropdown = document.getElementById(dropdownId);
+    let uniqueValues = [...new Set(values.filter(Boolean))]; // Remove empty, null, and duplicate values
+    dropdown.innerHTML = ''; // Clear existing options
+    dropdown.appendChild(new Option(`All ${category}`, 'All')); // Add 'All' option
 
-        uniqueValues.forEach(value => {
-            dropdown.appendChild(new Option(value, value));
-        });
-    }
+    uniqueValues.forEach(value => {
+        dropdown.appendChild(new Option(value, value));
+    });
+}
 
-    window.onload = fetchJsonDataAndInitialize;
+window.onload = fetchJsonDataAndInitialize;
 
 // Function to filter data based on current dropdown selections
 function getFilteredData() {
@@ -46,15 +46,21 @@ function getFilteredData() {
     const minorFilter = document.getElementById('minorFilter').value;
     const phoneFilter = document.getElementById('phoneFilter').value;
 
-    return jsonData.filter(item =>
-        (nameFilter === 'All' || item['First and Last Name'] === nameFilter) &&
-        (pronounsFilter === 'All' || item['What are your pronouns?'] === pronounsFilter) &&
-        (majorFilter === 'All' || item['Major(s)'] === majorFilter) &&
-        (schoolFilter === 'All' || item['Please select which school your major(s) is in.'] === schoolFilter) &&
-        (minorFilter === 'All' || item['Minor(s) if applicable'] === minorFilter) &&
-        (phoneFilter === 'All' || item['Cell Phone Number'] === phoneFilter)
-    );
+    // Normalize filters to ensure consistent comparison
+    const normalize = text => text && text.toLowerCase().trim();
+
+    return jsonData.filter(item => {
+        const nameMatches = nameFilter === 'All' || normalize(item['First and Last Name']) === normalize(nameFilter);
+        const pronounsMatches = pronounsFilter === 'All' || normalize(item['What are your pronouns?']) === normalize(pronounsFilter);
+        const majorMatches = majorFilter === 'All' || normalize(item['Major(s)']) === normalize(majorFilter);
+        const schoolMatches = schoolFilter === 'All' || normalize(item['Please select which school your major(s) is in.']) === normalize(schoolFilter);
+        const minorMatches = minorFilter === 'All' || normalize(item['Minor(s) if applicable']) === normalize(minorFilter);
+        const phoneMatches = phoneFilter === 'All' || normalize(item['Cell Phone Number']) === normalize(phoneFilter);
+
+        return nameMatches && pronounsMatches && majorMatches && schoolMatches && minorMatches && phoneMatches;
+    });
 }
+
 
 // Function to update the table based on the filtered data
 function updateTableAndDropdowns() {
@@ -82,9 +88,6 @@ function loadTableData(items) {
     });
 }
 
-// Add the event listener for the filter button
-document.querySelector('button').addEventListener('click', updateTableAndDropdowns);
-window.onload = fetchJsonDataAndInitialize;
 // Add the event listener for the filter button
 document.addEventListener('DOMContentLoaded', (event) => {
     document.querySelector('button').addEventListener('click', updateTableAndDropdowns);
