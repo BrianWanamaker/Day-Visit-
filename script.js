@@ -21,7 +21,16 @@ function initializeDropdowns() {
     updateDropdown('schoolFilter', 'School', jsonData.map(item => item['Please select which school your major(s) is in.']));
     updateDropdown('minorFilter', 'Minors', jsonData.map(item => item['Minor(s) if applicable']));
     updateDropdown('phoneFilter', 'Phone Numbers', jsonData.map(item => item['Cell Phone Number']));
+
+    // Attach change event listeners to dropdowns
+    document.getElementById('nameFilter').addEventListener('change', updateTableAndDropdowns);
+    document.getElementById('pronounsFilter').addEventListener('change', updateTableAndDropdowns);
+    document.getElementById('majorFilter').addEventListener('change', updateTableAndDropdowns);
+    document.getElementById('schoolFilter').addEventListener('change', updateTableAndDropdowns);
+    document.getElementById('minorFilter').addEventListener('change', updateTableAndDropdowns);
+    document.getElementById('phoneFilter').addEventListener('change', updateTableAndDropdowns);
 }
+
 
 // Update a specific dropdown with unique values
 function updateDropdown(dropdownId, category, values) {
