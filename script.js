@@ -74,7 +74,7 @@ function getFilteredData() {
         const schoolMatches = schoolFilter === 'All' || normalize(item['Please select which school your major(s) is in.']) === normalize(schoolFilter);
         const minorMatches = minorFilter === 'All' || normalize(item['Minor(s) if applicable']) === normalize(minorFilter);
 
-        return nameMatches && pronounsMatches && majorMatches && schoolMatches && minorMatches && phoneMatches;
+        return nameMatches && pronounsMatches && majorMatches && schoolMatches && minorMatches;
     });
 }
 
