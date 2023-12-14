@@ -20,7 +20,6 @@ function initializeDropdowns() {
     updateDropdown('majorFilter', 'Majors', jsonData.map(item => item['Major(s)']));
     updateDropdown('schoolFilter', 'School', jsonData.map(item => item['Please select which school your major(s) is in.']));
     updateDropdown('minorFilter', 'Minors', jsonData.map(item => item['Minor(s) if applicable']));
-    updateDropdown('phoneFilter', 'Phone Numbers', jsonData.map(item => item['Cell Phone Number']));
 
     // Attach change event listeners to dropdowns
     document.getElementById('nameFilter').addEventListener('change', updateTableAndDropdowns);
@@ -28,7 +27,6 @@ function initializeDropdowns() {
     document.getElementById('majorFilter').addEventListener('change', updateTableAndDropdowns);
     document.getElementById('schoolFilter').addEventListener('change', updateTableAndDropdowns);
     document.getElementById('minorFilter').addEventListener('change', updateTableAndDropdowns);
-    document.getElementById('phoneFilter').addEventListener('change', updateTableAndDropdowns);
 }
 
 
@@ -65,7 +63,6 @@ function getFilteredData() {
     const majorFilter = document.getElementById('majorFilter').value;
     const schoolFilter = document.getElementById('schoolFilter').value;
     const minorFilter = document.getElementById('minorFilter').value;
-    const phoneFilter = document.getElementById('phoneFilter').value;
 
     // Normalize filters to ensure consistent comparison
     const normalize = text => text && text.toLowerCase().trim();
@@ -76,7 +73,6 @@ function getFilteredData() {
         const majorMatches = majorFilter === 'All' || normalize(item['Major(s)']) === normalize(majorFilter);
         const schoolMatches = schoolFilter === 'All' || normalize(item['Please select which school your major(s) is in.']) === normalize(schoolFilter);
         const minorMatches = minorFilter === 'All' || normalize(item['Minor(s) if applicable']) === normalize(minorFilter);
-        const phoneMatches = phoneFilter === 'All' || normalize(item['Cell Phone Number']) === normalize(phoneFilter);
 
         return nameMatches && pronounsMatches && majorMatches && schoolMatches && minorMatches && phoneMatches;
     });
@@ -102,9 +98,6 @@ function loadTableData(items) {
         row.insertCell().textContent = item['Major(s)'];
         row.insertCell().textContent = item['Please select which school your major(s) is in.'];
         row.insertCell().textContent = item['Minor(s) if applicable'];
-        row.insertCell().textContent = item['Cell Phone Number'];
-        row.insertCell().textContent = item['QU Email Address'];
-
         // Add a cell for the class schedule
         let scheduleCell = row.insertCell();
         scheduleCell.textContent = formatSchedule(item.schedule || []);
