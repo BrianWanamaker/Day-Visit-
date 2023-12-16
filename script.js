@@ -1,10 +1,14 @@
-let jsonData = []; // This should be at the top level of your script, outside any function
+let jsonData = [];
 
 function fetchJsonDataAndInitialize() {
     fetch("responses.json")
         .then(response => response.json())
         .then(data => {
-            jsonData = data;
+            // First, parse the schedules for each student
+            jsonData = data.map(student => ({
+                ...student,
+                schedule: parseSchedule(student)
+            }));
             initializeDropdowns();
             updateTableAndDropdowns();
         })
