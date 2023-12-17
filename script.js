@@ -104,7 +104,7 @@ function loadTableData(items) {
         row.insertCell().textContent = item['Minor(s) if applicable'];
         // Add a cell for the class schedule
         let scheduleCell = row.insertCell();
-        scheduleCell.textContent = formatSchedule(item.schedule || []);
+        scheduleCell.innerHTML = formatSchedule(item.schedule || []);
     });
 }
 
