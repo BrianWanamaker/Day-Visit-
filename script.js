@@ -112,8 +112,48 @@ function formatSchedule(schedule) {
     if (!schedule || schedule.length === 0) {
         return "No schedule info available";
     }
-    return schedule.map(s => `${s.day}: ${s.startTime} - ${s.endTime}`).join(', ');
+
+    // Group and sort the class times by day
+    const scheduleByDay = {};
+    schedule.forEach(s => {
+        if (!scheduleByDay[s.day]) {
+            scheduleByDay[s.day] = [];
+        }
+        scheduleByDay[s.day].push({ start: s.startTime, end: s.endTime });
+    });
+
+    for (let day in scheduleByDay) {
+        scheduleByDay[day].sort((a, b) => convertTimeToMinutes(a.start) - convertTimeToMinutes(b.start));
+    }
+
+    // Format the schedule strings
+    const formattedSchedule = Object.entries(scheduleByDay).map(([day, times]) => {
+        // Create a string for each day's schedule
+        const timesStr = times.map(time => `${formatTime(time.start)} - ${formatTime(time.end)}`).join(', ');
+        return `${day}: ${timesStr}`;
+    });
+
+    return formattedSchedule.join('; ');
 }
+
+function convertTimeToMinutes(time) {
+    const [hours, minutes, modifier] = time.split(/[: ]/);
+    let totalMinutes = parseInt(hours, 10) * 60 + parseInt(minutes, 10);
+    if (modifier === 'PM' && hours !== '12') {
+        totalMinutes += 12 * 60;
+    } else if (modifier === 'AM' && hours === '12') {
+        totalMinutes = parseInt(minutes, 10);
+    }
+    return totalMinutes;
+}
+
+function formatTime(time) {
+    let [hour, minute] = time.split(':');
+    const ampm = parseInt(hour) >= 12 ? 'PM' : 'AM';
+    hour = ((parseInt(hour) + 11) % 12 + 1); // Convert to 12-hour format
+    return `${hour}:${minute} ${ampm}`;
+}
+
 
 
 // Add the event listener for the filter button
