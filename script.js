@@ -116,10 +116,13 @@ function formatSchedule(schedule) {
     // Group and sort the class times by day
     const scheduleByDay = {};
     schedule.forEach(s => {
-        if (!scheduleByDay[s.day]) {
-            scheduleByDay[s.day] = [];
-        }
-        scheduleByDay[s.day].push({ start: s.startTime, end: s.endTime });
+        s.day.split(',').forEach(day => { // Split multiple days and trim
+            day = day.trim();
+            if (!scheduleByDay[day]) {
+                scheduleByDay[day] = [];
+            }
+            scheduleByDay[day].push({ start: s.startTime, end: s.endTime });
+        });
     });
 
     for (let day in scheduleByDay) {
@@ -130,10 +133,10 @@ function formatSchedule(schedule) {
     const formattedSchedule = Object.entries(scheduleByDay).map(([day, times]) => {
         // Create a string for each day's schedule
         const timesStr = times.map(time => `${formatTime(time.start)} - ${formatTime(time.end)}`).join(', ');
-        return `${day}: ${timesStr}`;
+        return `<strong>${day}</strong>: ${timesStr}`;
     });
 
-    return formattedSchedule.join('; ');
+    return formattedSchedule.join('<br>'); // Use <br> to separate days
 }
 
 function convertTimeToMinutes(time) {
