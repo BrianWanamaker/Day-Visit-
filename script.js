@@ -138,14 +138,19 @@ function formatSchedule(schedule) {
 }
 
 function formatTime(time) {
+    if (!time || time.includes('NaN') || time.includes('Undefined')) {
+        return 'Invalid time';
+    }
+
     let [hours, minutes, part] = time.split(/[: ]/);
     let hoursInt = parseInt(hours, 10);
     let ampm = hoursInt >= 12 ? 'PM' : 'AM';
     hoursInt = hoursInt % 12;
     hoursInt = hoursInt ? hoursInt : 12; // the hour '0' should be '12'
-    minutes = minutes.length < 2 ? '0' + minutes : minutes;
+    minutes = minutes.padStart(2, '0');
     return `${hoursInt}:${minutes} ${ampm}`;
 }
+
 
 // Add the event listener for the filter button
 document.addEventListener('DOMContentLoaded', (event) => {
