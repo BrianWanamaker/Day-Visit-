@@ -116,48 +116,36 @@ function formatSchedule(schedule) {
     // Group and sort the class times by day
     const scheduleByDay = {};
     schedule.forEach(s => {
-        s.day.split(',').forEach(day => { // Split multiple days and trim
-            day = day.trim();
+        (s.day.split(',').map(d => d.trim())).forEach(day => {
             if (!scheduleByDay[day]) {
                 scheduleByDay[day] = [];
             }
-            scheduleByDay[day].push({ start: s.startTime, end: s.endTime });
+            scheduleByDay[day].push(`${formatTime(s.startTime)} - ${formatTime(s.endTime)}`);
         });
     });
 
-    for (let day in scheduleByDay) {
-        scheduleByDay[day].sort((a, b) => convertTimeToMinutes(a.start) - convertTimeToMinutes(b.start));
-    }
+    // Sort the days of the week
+    const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const sortedDays = daysOfWeek.filter(day => scheduleByDay[day]);
 
     // Format the schedule strings
-    const formattedSchedule = Object.entries(scheduleByDay).map(([day, times]) => {
-        // Create a string for each day's schedule
-        const timesStr = times.map(time => `${formatTime(time.start)} - ${formatTime(time.end)}`).join(', ');
+    const formattedSchedule = sortedDays.map(day => {
+        const timesStr = scheduleByDay[day].join(', ');
         return `<strong>${day}</strong>: ${timesStr}`;
     });
 
     return formattedSchedule.join('<br>'); // Use <br> to separate days
 }
 
-function convertTimeToMinutes(time) {
-    const [hours, minutes, modifier] = time.split(/[: ]/);
-    let totalMinutes = parseInt(hours, 10) * 60 + parseInt(minutes, 10);
-    if (modifier === 'PM' && hours !== '12') {
-        totalMinutes += 12 * 60;
-    } else if (modifier === 'AM' && hours === '12') {
-        totalMinutes = parseInt(minutes, 10);
-    }
-    return totalMinutes;
-}
-
 function formatTime(time) {
-    let [hour, minute] = time.split(':');
-    const ampm = parseInt(hour) >= 12 ? 'PM' : 'AM';
-    hour = ((parseInt(hour) + 11) % 12 + 1); // Convert to 12-hour format
-    return `${hour}:${minute} ${ampm}`;
+    let [hours, minutes, part] = time.split(/[: ]/);
+    let hoursInt = parseInt(hours, 10);
+    let ampm = hoursInt >= 12 ? 'PM' : 'AM';
+    hoursInt = hoursInt % 12;
+    hoursInt = hoursInt ? hoursInt : 12; // the hour '0' should be '12'
+    minutes = minutes.length < 2 ? '0' + minutes : minutes;
+    return `${hoursInt}:${minutes} ${ampm}`;
 }
-
-
 
 // Add the event listener for the filter button
 document.addEventListener('DOMContentLoaded', (event) => {
