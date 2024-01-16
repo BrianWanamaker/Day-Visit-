@@ -150,8 +150,6 @@ function formatTime(time) {
     return `${hours}:${minutes} ${ampm}`;
 }
 
-
-
 // Add the event listener for the filter button
 document.addEventListener('DOMContentLoaded', (event) => {
     document.querySelector('button').addEventListener('click', updateTableAndDropdowns);
