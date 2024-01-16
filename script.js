@@ -82,7 +82,6 @@ function getFilteredData() {
     });
 }
 
-
 // Function to update the table based on the filtered data
 function updateTableAndDropdowns() {
     const filteredData = getFilteredData();
@@ -93,7 +92,7 @@ function updateTableAndDropdowns() {
 
 function loadTableData(items) {
     const table = document.getElementById('tableData');
-    table.innerHTML = ''; // Clear the table first
+    table.innerHTML = '';
 
     items.forEach(item => {
         let row = table.insertRow();
@@ -113,29 +112,24 @@ function formatSchedule(schedule) {
         return "No schedule info available";
     }
 
-    // Group and sort the class times by day
-    const scheduleByDay = {};
+    let scheduleByDay = {};
     schedule.forEach(s => {
-        (s.day.split(',').map(d => d.trim())).forEach(day => {
-            if (!scheduleByDay[day]) {
-                scheduleByDay[day] = [];
-            }
-            scheduleByDay[day].push(`${formatTime(s.startTime)} - ${formatTime(s.endTime)}`);
-        });
+        if (!scheduleByDay[s.day]) {
+            scheduleByDay[s.day] = [];
+        }
+        scheduleByDay[s.day].push(`${formatTime(s.startTime)} - ${formatTime(s.endTime)}`);
     });
 
-    // Sort the days of the week
-    const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-    const sortedDays = daysOfWeek.filter(day => scheduleByDay[day]);
+    let formattedSchedule = [];
+    for (let day of ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]) {
+        if (scheduleByDay[day]) {
+            formattedSchedule.push(`<strong>${day}</strong>: ${scheduleByDay[day].join(', ')}`);
+        }
+    }
 
-    // Format the schedule strings
-    const formattedSchedule = sortedDays.map(day => {
-        const timesStr = scheduleByDay[day].join(', ');
-        return `<strong>${day}</strong>: ${timesStr}`;
-    });
-
-    return formattedSchedule.join('<br>'); // Use <br> to separate days
+    return formattedSchedule.join('<br>');
 }
+
 
 function formatTime(time) {
     if (!time || time.includes('NaN') || time.includes('Undefined')) {
@@ -159,17 +153,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 
 function parseSchedule(student) {
-    return student["Day(s) of the Week"].map((days, index) => {
+    let schedule = [];
+    for (let i = 0; i < student["Day(s) of the Week"].length; i++) {
+        let days = student["Day(s) of the Week"][i];
         if (days) {
-            return days.split(',').map(day => ({
-                day: day.trim(),
-                startTime: student["Start Time"][index],
-                endTime: student["End Time"][index]
-            }));
+            days.split(',').forEach(day => {
+                schedule.push({
+                    day: day.trim(),
+                    startTime: student["Start Time"][i],
+                    endTime: student["End Time"][i]
+                });
+            });
         }
-        return [];
-    }).flat();
+    }
+    return schedule;
 }
+
 
 // Example usage:
 let students = jsonData.map(student => ({
