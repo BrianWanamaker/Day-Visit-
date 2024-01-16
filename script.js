@@ -136,13 +136,23 @@ function formatTime(time) {
         return 'Invalid time';
     }
 
+    // Extract hours and minutes from the time string
     let [hours, minutes] = time.split(':').map(Number);
+
+    // Determine AM or PM suffix
     let ampm = hours >= 12 ? 'PM' : 'AM';
+
+    // Convert hours from 24-hour to 12-hour format
     hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
+    hours = hours || 12; // Convert hour '0' to '12'
+
+    // Ensure minutes are two digits
     minutes = minutes.toString().padStart(2, '0');
+
+    // Construct formatted time string
     return `${hours}:${minutes} ${ampm}`;
 }
+
 
 
 
