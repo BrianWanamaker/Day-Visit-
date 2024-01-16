@@ -136,14 +136,14 @@ function formatTime(time) {
         return 'Invalid time';
     }
 
-    let [hours, minutes, part] = time.split(/[: ]/);
-    let hoursInt = parseInt(hours, 10);
-    let ampm = hoursInt >= 12 ? 'PM' : 'AM';
-    hoursInt = hoursInt % 12;
-    hoursInt = hoursInt ? hoursInt : 12; // the hour '0' should be '12'
-    minutes = minutes.padStart(2, '0');
-    return `${hoursInt}:${minutes} ${ampm}`;
+    let [hours, minutes] = time.split(':').map(Number);
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes.toString().padStart(2, '0');
+    return `${hours}:${minutes} ${ampm}`;
 }
+
 
 
 // Add the event listener for the filter button
