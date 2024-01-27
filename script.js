@@ -164,26 +164,59 @@ function parseSchedule(student) {
 
     for (let i = 0; i < student["Day(s) of the Week"].length; i++) {
         let days = student["Day(s) of the Week"][i];
-        let endTime = student["End Time"][i] || individualEndTime; // Use individualEndTime if "End Time" is not available
-
         if (days) {
             days.split(',').forEach(day => {
                 schedule.push({
                     day: day.trim(),
                     startTime: student["Start Time"][i],
-                    endTime: endTime  // Use the modified endTime
+                    endTime: student["End Time"][i]  // Use the value from the "End Time" array
                 });
             });
         }
     }
 
-    // If individualEndTime is still not used and the schedule is not empty, add it to the last schedule item
-    if (individualEndTime && schedule.length > 0 && !schedule[schedule.length - 1].endTime) {
-        schedule[schedule.length - 1].endTime = individualEndTime;
+    // Function to convert time string to a comparable number
+    const timeToNumber = (timeStr) => {
+        if (!timeStr) return null;
+        const [time, modifier] = timeStr.split(' ');
+        let [hours, minutes] = time.split(':');
+        hours = parseInt(hours, 10);
+        minutes = parseInt(minutes, 10);
+        if (modifier === 'PM' && hours !== 12) hours += 12;
+        if (modifier === 'AM' && hours === 12) hours = 0;
+        return hours * 60 + minutes;
+    };
+
+    // If individualEndTime is provided, find the correct position to insert it
+    if (individualEndTime) {
+        let individualEndTimeNumber = timeToNumber(individualEndTime);
+        let inserted = false;
+
+        for (let i = 0; i < schedule.length; i++) {
+            let startTimeNumber = timeToNumber(schedule[i].startTime);
+
+            // If the individualEndTime should come after the current start time but before the next start time (or it's the last element), insert it here
+            if (individualEndTimeNumber >= startTimeNumber &&
+                (i === schedule.length - 1 || individualEndTimeNumber < timeToNumber(schedule[i + 1].startTime))) {
+                schedule[i].endTime = individualEndTime;  // Set the individualEndTime to the current slot
+                inserted = true;
+                break;
+            }
+        }
+
+        // If not inserted, it means it should be the earliest time, insert at the beginning
+        if (!inserted) {
+            schedule.unshift({
+                day: schedule[0].day, // Assuming the day is the same as the first schedule item
+                startTime: student["Start Time"][0], // Use the start time of the first class
+                endTime: individualEndTime
+            });
+        }
     }
 
     return schedule;
 }
+
 
 
 
