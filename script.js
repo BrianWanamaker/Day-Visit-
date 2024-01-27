@@ -169,15 +169,15 @@ function parseSchedule(student) {
                 schedule.push({
                     day: day.trim(),
                     startTime: student["Start Time"][i],
-                    endTime: student["End Time"][i]  // Use the value from the "End Time" array
+                    endTime: student["End Time"][i] || "" // Use the value from the "End Time" array, if it's empty use an empty string
                 });
             });
         }
     }
 
-    // Function to convert time string to a comparable number
+    // Function to convert time string to a comparable number, return null if the time is not valid
     const timeToNumber = (timeStr) => {
-        if (!timeStr) return null;
+        if (!timeStr || timeStr.trim() === '') return null;
         const [time, modifier] = timeStr.split(' ');
         let [hours, minutes] = time.split(':');
         hours = parseInt(hours, 10);
@@ -196,7 +196,7 @@ function parseSchedule(student) {
             let startTimeNumber = timeToNumber(schedule[i].startTime);
 
             // If the individualEndTime should come after the current start time but before the next start time (or it's the last element), insert it here
-            if (individualEndTimeNumber >= startTimeNumber &&
+            if (individualEndTimeNumber && startTimeNumber && individualEndTimeNumber >= startTimeNumber &&
                 (i === schedule.length - 1 || individualEndTimeNumber < timeToNumber(schedule[i + 1].startTime))) {
                 schedule[i].endTime = individualEndTime;  // Set the individualEndTime to the current slot
                 inserted = true;
@@ -205,7 +205,7 @@ function parseSchedule(student) {
         }
 
         // If not inserted, it means it should be the earliest time, insert at the beginning
-        if (!inserted) {
+        if (!inserted && schedule.length > 0) {
             schedule.unshift({
                 day: schedule[0].day, // Assuming the day is the same as the first schedule item
                 startTime: student["Start Time"][0], // Use the start time of the first class
@@ -216,6 +216,7 @@ function parseSchedule(student) {
 
     return schedule;
 }
+
 
 
 
