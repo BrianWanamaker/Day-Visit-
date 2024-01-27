@@ -187,25 +187,26 @@ function parseSchedule(student) {
         return hours * 60 + minutes;
     };
 
-    // If individualEndTime is provided, find the correct position to insert it
+    // Insert the individualEndTime at the correct position
     if (individualEndTime) {
         let individualEndTimeNumber = timeToNumber(individualEndTime);
+
         let inserted = false;
-
         for (let i = 0; i < schedule.length; i++) {
-            let startTimeNumber = timeToNumber(schedule[i].startTime);
+            let currentStartTimeNumber = timeToNumber(schedule[i].startTime);
+            let nextStartTimeNumber = i < schedule.length - 1 ? timeToNumber(schedule[i + 1].startTime) : null;
 
-            // If the individualEndTime should come after the current start time but before the next start time (or it's the last element), insert it here
-            if (individualEndTimeNumber && startTimeNumber && individualEndTimeNumber >= startTimeNumber &&
-                (i === schedule.length - 1 || individualEndTimeNumber < timeToNumber(schedule[i + 1].startTime))) {
-                schedule[i].endTime = individualEndTime;  // Set the individualEndTime to the current slot
+            if (individualEndTimeNumber && currentStartTimeNumber && individualEndTimeNumber > currentStartTimeNumber &&
+                (!nextStartTimeNumber || individualEndTimeNumber < nextStartTimeNumber)) {
+                // Insert individualEndTime here
+                schedule[i].endTime = individualEndTime;
                 inserted = true;
                 break;
             }
         }
 
-        // If not inserted, it means it should be the earliest time, insert at the beginning
-        if (!inserted && schedule.length > 0) {
+        // If the individualEndTime is not inserted and it's before all start times, prepend it
+        if (!inserted) {
             schedule.unshift({
                 day: schedule[0].day, // Assuming the day is the same as the first schedule item
                 startTime: student["Start Time"][0], // Use the start time of the first class
@@ -216,11 +217,6 @@ function parseSchedule(student) {
 
     return schedule;
 }
-
-
-
-
-
 // Example usage:
 let students = jsonData.map(student => ({
     ...student,
