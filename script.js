@@ -155,11 +155,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     document.querySelector('button').addEventListener('click', updateTableAndDropdowns);
     fetchJsonDataAndInitialize(); // Call this function directly, no need for window.onload
 });
-
 function parseSchedule(student) {
-    let schedule = [];
-
-    // Convert time string to a comparable number, return null if the time is not valid
+    // Helper function to convert time string to a number for comparison
     const timeToNumber = (timeStr) => {
         if (!timeStr || timeStr.trim() === '') return null;
         const [time, modifier] = timeStr.split(' ');
@@ -171,48 +168,52 @@ function parseSchedule(student) {
         return hours * 60 + minutes;
     };
 
-    // Check if the student has an individual "End time" field and store it
+    // Check if the student has an individual "End time" field and store its numeric value
     let individualEndTime = student["End time"] ? student["End time"].trim() : null;
     let individualEndTimeNumber = individualEndTime ? timeToNumber(individualEndTime) : null;
 
-    // Parse the regular schedule
-    for (let i = 0; i < student["Day(s) of the Week"].length; i++) {
-        let days = student["Day(s) of the Week"][i];
-        let endTime = student["End Time"][i] || ""; // Use the value from the "End Time" array, if it's empty use an empty string
+    let schedule = student["Day(s) of the Week"].flatMap((days, index) => {
+        if (!days) return [];  // Skip if no days
 
-        if (days) {
-            days.split(',').forEach(day => {
-                let entry = {
-                    day: day.trim(),
-                    startTime: student["Start Time"][i],
-                    endTime: endTime
-                };
-                let startTimeNumber = timeToNumber(entry.startTime);
+        // Split days and create a schedule entry for each day
+        return days.split(',').map(day => ({
+            day: day.trim(),
+            startTime: student["Start Time"][index],
+            endTime: student["End Time"][index] || individualEndTime  // Default to individualEndTime if "End Time" is not present
+        }));
+    });
 
-                // If individualEndTimeNumber should be inserted here, do it
-                if (individualEndTimeNumber && startTimeNumber &&
-                    (!entry.endTime || individualEndTimeNumber < timeToNumber(entry.endTime)) &&
-                    individualEndTimeNumber > startTimeNumber) {
-                    entry.endTime = individualEndTime;  // Set the individualEndTime to the current slot
-                    individualEndTimeNumber = null;  // Prevent further insertion
-                }
+    // If an individual end time exists, find the correct position to insert/update it
+    if (individualEndTimeNumber) {
+        let inserted = false;
 
-                schedule.push(entry);
+        for (let i = 0; i < schedule.length; i++) {
+            let currentStartTimeNumber = timeToNumber(schedule[i].startTime);
+            let nextStartTimeNumber = (i < schedule.length - 1) ? timeToNumber(schedule[i + 1].startTime) : null;
+
+            // Check if individualEndTime fits between current start time and the next start time
+            if (individualEndTimeNumber > currentStartTimeNumber &&
+                (nextStartTimeNumber === null || individualEndTimeNumber < nextStartTimeNumber)) {
+                // Update the end time for this slot
+                schedule[i].endTime = individualEndTime;
+                inserted = true;
+                break;
+            }
+        }
+
+        // If individualEndTime was not inserted, and it's earlier than all start times, prepend it
+        if (!inserted && schedule.length > 0) {
+            schedule.unshift({
+                day: schedule[0].day,  // Assuming the day is the same as the first schedule item
+                startTime: individualEndTime,  // Use the individual end time as start time, as we don't have the exact start time
+                endTime: individualEndTime
             });
         }
     }
 
-    // If individualEndTime was not inserted and it exists, it means it's after all provided times
-    if (individualEndTimeNumber !== null) {
-        schedule.push({
-            day: schedule[schedule.length - 1].day, // Assuming the day is the same as the last schedule item
-            startTime: individualEndTime, // As no start time is known for this end time
-            endTime: individualEndTime
-        });
-    }
-
     return schedule;
 }
+
 // Example usage:
 let students = jsonData.map(student => ({
     ...student,
