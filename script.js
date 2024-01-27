@@ -158,20 +158,33 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 function parseSchedule(student) {
     let schedule = [];
+
+    // Check if the student has an individual "End time" field and store it
+    let individualEndTime = student["End time"] ? student["End time"].trim() : null;
+
     for (let i = 0; i < student["Day(s) of the Week"].length; i++) {
         let days = student["Day(s) of the Week"][i];
+        let endTime = student["End Time"][i] || individualEndTime; // Use individualEndTime if "End Time" is not available
+
         if (days) {
             days.split(',').forEach(day => {
                 schedule.push({
                     day: day.trim(),
                     startTime: student["Start Time"][i],
-                    endTime: student["End Time"][i]
+                    endTime: endTime  // Use the modified endTime
                 });
             });
         }
     }
+
+    // If individualEndTime is still not used and the schedule is not empty, add it to the last schedule item
+    if (individualEndTime && schedule.length > 0 && !schedule[schedule.length - 1].endTime) {
+        schedule[schedule.length - 1].endTime = individualEndTime;
+    }
+
     return schedule;
 }
+
 
 
 // Example usage:
