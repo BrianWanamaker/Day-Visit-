@@ -108,42 +108,35 @@ document.addEventListener('DOMContentLoaded', (event) => {
 function parseSchedule(student) {
     let scheduleEntries = [];
 
-    // Define the base keys for the repeating schedule columns
-    const baseKeys = {
-        day: 'Day(s) of the Week',
-        startTime: 'Start Time',
-        endTime: 'End Time',
-        className: 'Class Name and Section',
-        professorName: 'Professor First and Last Name'
-    };
+    // Loop through the schedule fields based on a predefined pattern
+    for (let i = 0; i <= 9; i++) {
+        // Define column headers with the appropriate suffix
+        let suffix = i === 0 ? '' : ` ${i}`;
+        let dayKey = `Day(s) of the Week${suffix}`;
+        let startTimeKey = `Start Time${suffix}`;
+        let endTimeKey = `End Time${suffix}`;
+        let classNameKey = `Class Name and Section${suffix}`;
+        let professorNameKey = `Professor First and Last Name${suffix}`;
 
-    // Iterate through the sets of schedule data
-    for (let i = 0; i <= 9; i++) { // Adjust based on the maximum number of classes
-        // Create keys for this set of schedule data
-        let keys = {
-            day: baseKeys.day + (i ? ` ${i}` : ''),
-            startTime: baseKeys.startTime + (i ? ` ${i}` : ''),
-            endTime: (i ? baseKeys.endTime + ` ${i}` : 'End time'),
-            className: baseKeys.className + (i ? ` ${i}` : ''),
-            professorName: baseKeys.professorName + (i ? ` ${i}` : '')
-        };
-
-        // If there is day data for this set, construct the schedule string
-        if (student[keys.day]) {
-            let days = student[keys.day].split(',');
-            days.forEach(day => {
-                let startTime = student[keys.startTime] || 'TBD';
-                let endTime = student[keys.endTime] || 'TBD';
-                let className = student[keys.className] || 'Class not set';
-                let professorName = student[keys.professorName] || 'Professor not set';
+        // Process each day of the week separately
+        let days = student[dayKey] ? student[dayKey].split(',') : [];
+        days.forEach(day => {
+            // Skip if the day is an empty string or only contains quotes
+            if (day.replace(/['"]+/g, '').trim()) {
+                let startTime = student[startTimeKey] ? student[startTimeKey].replace(/['"]+/g, '').trim() : 'TBD';
+                let endTime = student[endTimeKey] ? student[endTimeKey].replace(/['"]+/g, '').trim() : 'TBD';
+                let className = student[classNameKey] ? student[classNameKey].replace(/['"]+/g, '').trim() : 'Class not set';
+                let professorName = student[professorNameKey] ? student[professorNameKey].replace(/['"]+/g, '').trim() : 'Professor not set';
                 let scheduleStr = `${day.trim()}: ${startTime} - ${endTime}, ${className}, ${professorName}`;
                 scheduleEntries.push(scheduleStr);
-            });
-        }
+            }
+        });
     }
 
+    // Combine all schedule entries into one string separated by HTML line breaks
     return scheduleEntries.length > 0 ? scheduleEntries.join('<br>') : 'No schedule info available';
 }
+
 
 // Add the event listener for the filter button and load data on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', (event) => {
