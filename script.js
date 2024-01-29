@@ -98,53 +98,34 @@ document.addEventListener('DOMContentLoaded', (event) => {
     document.querySelector('button').addEventListener('click', updateTable);
     fetchCsvDataAndInitialize();
 });
-
 function parseSchedule(student) {
     // Initialize an array to hold schedule strings
     let scheduleEntries = [];
 
-    // This loop assumes there are up to 9 sets of schedule data as per your column names
+    // Loop through each possible schedule set based on your CSV structure
     for (let i = 1; i <= 9; i++) {
-        let suffix = i === 1 ? '' : ` ${i}`;  // Correctly format the suffix for accessing the data
+        let dayKey = `Day(s) of the Week${i > 1 ? ' ' + i : ''}`;
+        let startTimeKey = `Start Time${i > 1 ? ' ' + i : ''}`;
+        let endTimeKey = `End Time${i > 1 ? ' ' + i : ''}`;
+        let classNameKey = `Class Name and Section${i > 1 ? ' ' + i : ''}`;
+        let professorNameKey = `Professor First and Last Name${i > 1 ? ' ' + i : ''}`;
 
-        // Construct the keys based on the loop index and the provided column names
-        let dayKey = `Day(s) of the Week${suffix}`;
-        let startTimeKey = `Start Time${suffix}`;
-        let endTimeKey = `End Time${suffix}`;
-        let classNameKey = `Class Name and Section${suffix}`;
-        let professorNameKey = `Professor First and Last Name${suffix}`;
-
-        // If the student has data for the current set of schedule keys, create the string
+        // Check if the student has data for this set of schedule
         if (student[dayKey] || student[startTimeKey] || student[endTimeKey]) {
-            let day = student[dayKey] || 'Unknown day';
-            let startTime = student[startTimeKey] || 'Start time not set';
-            let endTime = student[endTimeKey] || 'End time not set';
-            let className = student[classNameKey] || '';
-            let professorName = student[professorNameKey] || '';
-            scheduleEntries.push(`${day}: ${startTime} - ${endTime}, ${className}, ${professorName}`);
+            let days = student[dayKey] || 'N/A';
+            let startTime = student[startTimeKey] || 'N/A';
+            let endTime = student[endTimeKey] || 'N/A';
+            let className = student[classNameKey] || 'N/A';
+            let professorName = student[professorNameKey] || 'N/A';
+
+            // Construct the schedule string for this set
+            let scheduleStr = `${days}: ${startTime} - ${endTime}, ${className}, ${professorName}`;
+            scheduleEntries.push(scheduleStr);
         }
     }
 
-    // Join the individual schedule entries with a line break
-    return scheduleEntries.length > 0 ? scheduleEntries.join('<br>') : 'No schedule info available';
-}
-// Update the table based on the filtered data
-function updateTable() {
-    const filteredData = getFilteredData();
-    const tableBody = document.getElementById('tableData');
-    tableBody.innerHTML = ''; // Clear existing table rows
-
-    filteredData.forEach(item => {
-        let row = tableBody.insertRow();
-        Object.values(filters).forEach(field => {
-            row.insertCell().textContent = item[field];
-        });
-
-        // Add a cell for the class schedule
-        let scheduleCell = row.insertCell();
-        // Call parseSchedule for each item and set it as innerHTML of the schedule cell
-        scheduleCell.innerHTML = parseSchedule(item);
-    });
+    // Join all the schedule strings with a break line
+    return scheduleEntries.join('<br>') || 'No schedule info available';
 }
 
 // Add the event listener for the filter button and load data on DOMContentLoaded
