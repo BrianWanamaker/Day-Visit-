@@ -103,23 +103,31 @@ function parseSchedule(student) {
     // Initialize an array to hold schedule strings
     let scheduleEntries = [];
 
-    // Iterate over the schedule-related columns
-    for (let i = 1; i <= 9; i++) { // Assuming you have 9 sets of schedule-related columns
-        let dayKey = `Day(s) of the Week ${i !== 1 ? i : ''}`;
-        let startTimeKey = `Start Time ${i !== 1 ? i : ''}`;
-        let endTimeKey = `End Time ${i !== 1 ? i : ''}`;
-        let classNameKey = `Class Name and Section ${i !== 1 ? i : ''}`;
-        let professorNameKey = `Professor First and Last Name ${i !== 1 ? i : ''}`;
+    // This loop assumes there are up to 9 sets of schedule data as per your column names
+    for (let i = 1; i <= 9; i++) {
+        let suffix = i === 1 ? '' : ` ${i}`;  // Correctly format the suffix for accessing the data
 
-        if (student[dayKey] && student[startTimeKey] && student[endTimeKey]) {
-            scheduleEntries.push(`${student[dayKey]}: ${student[startTimeKey]} - ${student[endTimeKey]}, ${student[classNameKey]}, ${student[professorNameKey]}`);
+        // Construct the keys based on the loop index and the provided column names
+        let dayKey = `Day(s) of the Week${suffix}`;
+        let startTimeKey = `Start Time${suffix}`;
+        let endTimeKey = `End Time${suffix}`;
+        let classNameKey = `Class Name and Section${suffix}`;
+        let professorNameKey = `Professor First and Last Name${suffix}`;
+
+        // If the student has data for the current set of schedule keys, create the string
+        if (student[dayKey] || student[startTimeKey] || student[endTimeKey]) {
+            let day = student[dayKey] || 'Unknown day';
+            let startTime = student[startTimeKey] || 'Start time not set';
+            let endTime = student[endTimeKey] || 'End time not set';
+            let className = student[classNameKey] || '';
+            let professorName = student[professorNameKey] || '';
+            scheduleEntries.push(`${day}: ${startTime} - ${endTime}, ${className}, ${professorName}`);
         }
     }
 
     // Join the individual schedule entries with a line break
-    return scheduleEntries.join('<br>') || 'No schedule info available';
+    return scheduleEntries.length > 0 ? scheduleEntries.join('<br>') : 'No schedule info available';
 }
-
 // Update the table based on the filtered data
 function updateTable() {
     const filteredData = getFilteredData();
