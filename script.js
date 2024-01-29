@@ -13,20 +13,27 @@ function fetchCsvDataAndInitialize() {
     fetch('responses_csv.csv')
         .then(response => response.text())
         .then(csvText => {
-            Papa.parse(csvText, {
-                header: true,
-                skipEmptyLines: true,
-                complete: (results) => {
-                    csvData = results.data;
-                    initializeDropdowns();
-                    updateTable();
-                }
+            // Split CSV text by new lines to get an array of rows
+            const rows = csvText.split('\n').map(row => row.split(',')); // Simple CSV parsing
+
+            // Convert rows to an array of objects
+            const headers = rows[0];
+            csvData = rows.slice(1).map(row => {
+                let rowData = {};
+                row.forEach((value, index) => {
+                    rowData[headers[index]] = value;
+                });
+                return rowData;
             });
+
+            initializeDropdowns();
+            updateTable();
         })
         .catch(error => {
             console.error('Error loading CSV data:', error);
         });
 }
+
 
 // Function to initialize dropdowns based on data
 function initializeDropdowns() {
