@@ -1,13 +1,5 @@
 let csvData = [];
 
-const filters = {
-    'nameFilter': 'First and Last Name',
-    'pronounsFilter': 'What are your pronouns?',
-    'majorFilter': 'Major(s)',
-    'schoolFilter': 'Please select which school your major(s) is in.',
-    'minorFilter': 'Minor(s) if applicable'
-};
-
 // Function to fetch and initialize CSV data
 function fetchCsvDataAndInitialize() {
     fetch('responses_csv.csv')
@@ -34,7 +26,6 @@ function fetchCsvDataAndInitialize() {
         });
 }
 
-
 // Function to initialize dropdowns based on data
 function initializeDropdowns() {
     const fields = ['First and Last Name', 'What are your pronouns?', 'Major(s)', 'Please select which school your major(s) is in.', 'Minor(s) if applicable'];
@@ -44,9 +35,15 @@ function initializeDropdowns() {
         updateDropdown(dropdownIds[index], field, csvData.map(item => item[field]));
     });
 
-    document.querySelectorAll('select').forEach(select => {
-        select.addEventListener('change', updateTable);
-    });
+    // Initialize the dayFilter dropdown
+    const dayDropdown = document.getElementById('dayFilter');
+    dayDropdown.addEventListener('change', updateTable);
+
+    // Initialize time filters
+    const startTimeFilter = document.getElementById('startTimeFilter');
+    const endTimeFilter = document.getElementById('endTimeFilter');
+    startTimeFilter.addEventListener('change', updateTable);
+    endTimeFilter.addEventListener('change', updateTable);
 }
 
 // Function to update a specific dropdown with unique values
@@ -74,11 +71,18 @@ function getFilteredData() {
         'minorFilter': 'Minor(s) if applicable'
     };
 
+    // Get day and time filter values
+    const dayFilterValue = document.getElementById('dayFilter').value;
+    const startTimeFilterValue = document.getElementById('startTimeFilter').value;
+    const endTimeFilterValue = document.getElementById('endTimeFilter').value;
+
     return csvData.filter(item => {
         return Object.entries(filters).every(([dropdownId, field]) => {
             const filterValue = document.getElementById(dropdownId).value;
             return filterValue === 'All' || item[field] === filterValue;
-        });
+        }) && (dayFilterValue === 'All' || (item['Day(s) of the Week'] && item['Day(s) of the Week'].includes(dayFilterValue)))
+            && (!startTimeFilterValue || (item['Start Time'] && item['Start Time'] >= startTimeFilterValue))
+            && (!endTimeFilterValue || (item['End Time'] && item['End Time'] <= endTimeFilterValue));
     });
 }
 
@@ -100,17 +104,11 @@ function updateTable() {
     });
 }
 
-// Add the event listener for the filter button and load data on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', (event) => {
-    document.querySelector('button').addEventListener('click', updateTable);
-    fetchCsvDataAndInitialize();
-});
 function parseSchedule(student) {
     let scheduleEntries = [];
 
     // Loop through the schedule fields based on a predefined pattern
     for (let i = 0; i <= 9; i++) {
-        // Define column headers with the appropriate suffix
         let suffix = i === 0 ? '' : ` ${i}`;
         let dayKey = `Day(s) of the Week${suffix}`;
         let startTimeKey = `Start Time${suffix}`;
@@ -127,7 +125,7 @@ function parseSchedule(student) {
                 let endTime = student[endTimeKey] ? student[endTimeKey].replace(/['"]+/g, '').trim() : 'TBD';
                 let className = student[classNameKey] ? student[classNameKey].replace(/['"]+/g, '').trim() : 'Class not set';
                 let professorName = student[professorNameKey] ? student[professorNameKey].replace(/['"]+/g, '').trim() : 'Professor not set';
-                let scheduleStr = `${day.trim()}: ${startTime} - ${endTime}, ${className}, ${professorName}`;
+                let scheduleStr = `${day.trim()}: ${className} with ${professorName} from ${startTime} to ${endTime}`;
                 scheduleEntries.push(scheduleStr);
             }
         });
@@ -136,7 +134,6 @@ function parseSchedule(student) {
     // Combine all schedule entries into one string separated by HTML line breaks
     return scheduleEntries.length > 0 ? scheduleEntries.join('<br>') : 'No schedule info available';
 }
-
 
 // Add the event listener for the filter button and load data on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', (event) => {
