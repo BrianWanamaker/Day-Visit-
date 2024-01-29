@@ -168,7 +168,8 @@ function parseSchedule(student) {
         return hours * 60 + minutes;
     };
 
-    let scheduleEntries = student["Day(s) of the Week"].map((days, index) => ({
+    // Extract the schedule from the student's data
+    let schedule = student["Day(s) of the Week"].map((days, index) => ({
         days: days ? days.split(',').map(day => day.trim()) : [],
         startTime: student["Start Time"][index],
         endTime: student["End Time"][index] || "", // Use the value from the "End Time" array, if it's empty use an empty string
@@ -176,36 +177,19 @@ function parseSchedule(student) {
         endTimeNumber: timeToNumber(student["End Time"][index])
     }));
 
+    // Handle the individual "End time"
     let individualEndTime = student["End time"] ? student["End time"].trim() : null;
     let individualEndTimeNumber = individualEndTime ? timeToNumber(individualEndTime) : null;
 
-    if (individualEndTimeNumber !== null) {
-        // Find the right slot to insert/update the individual end time
-        let inserted = false;
-        for (let entry of scheduleEntries) {
-            if (entry.startTimeNumber !== null && individualEndTimeNumber > entry.startTimeNumber &&
-                (entry.endTimeNumber === null || individualEndTimeNumber < entry.endTimeNumber)) {
-                entry.endTime = individualEndTime; // Update the end time
-                entry.endTimeNumber = individualEndTimeNumber; // Update the numeric end time
-                inserted = true;
-                break;
-            }
-        }
-
-        // If the individual end time was not inserted, it's after all other times
-        if (!inserted) {
-            scheduleEntries.push({
-                days: [], // Unknown days, leaving it empty or you can assign a default value
-                startTime: individualEndTime, // No start time for this end time, so using the end time as a placeholder
-                endTime: individualEndTime,
-                startTimeNumber: individualEndTimeNumber,
-                endTimeNumber: individualEndTimeNumber
-            });
-        }
+    // If individualEndTime exists, place it in the second-to-last slot of the schedule
+    if (individualEndTimeNumber !== null && schedule.length > 1) {
+        let secondToLastIndex = schedule.length - 2; // Determine the second-to-last index
+        schedule[secondToLastIndex].endTime = individualEndTime; // Set the individualEndTime to the second-to-last slot
+        schedule[secondToLastIndex].endTimeNumber = individualEndTimeNumber; // Update the numeric end time
     }
 
     // Flatten the days and create the final schedule array
-    let schedule = scheduleEntries.flatMap(entry => {
+    let finalSchedule = schedule.flatMap(entry => {
         if (entry.days.length === 0) return []; // Skip if no days
         return entry.days.map(day => ({
             day: day,
@@ -214,8 +198,9 @@ function parseSchedule(student) {
         }));
     });
 
-    return schedule;
+    return finalSchedule;
 }
+
 
 
 
