@@ -100,36 +100,48 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 function parseSchedule(student) {
     let scheduleEntries = [];
-    // Assuming you have up to 9 sets of classes, plus the set without a suffix
-    for (let i = 0; i <= 9; i++) {
-        let suffix = i === 0 ? '' : ` ${i}`;
-        let dayKey = `Day(s) of the Week${suffix}`;
-        let startTimeKey = `Start Time${suffix}`;
-        let endTimeKey = `End Time${suffix}`;
-        let classNameKey = `Class Name and Section${suffix}`;
-        let professorNameKey = `Professor First and Last Name${suffix}`;
+
+    // Handle the first set of schedule data (without numeric suffix)
+    if (student["Day(s) of the Week"] && student["Start Time"] && student["End Time"]) {
+        let days = student["Day(s) of the Week"].split(',');
+        days.forEach(day => {
+            let scheduleStr = `${day.trim()}: ${student["Start Time"]} - ${student["End Time"]}`;
+            if (student["Class Name and Section"]) {
+                scheduleStr += `, ${student["Class Name and Section"]}`;
+            }
+            if (student["Professor First and Last Name"]) {
+                scheduleStr += `, ${student["Professor First and Last Name"]}`;
+            }
+            scheduleEntries.push(scheduleStr);
+        });
+    }
+
+    // Handle the rest of the schedule data (with numeric suffixes)
+    for (let i = 2; i <= 9; i++) { // Assuming you have 9 sets of schedule-related columns
+        let dayKey = `Day(s) of the Week ${i}`;
+        let startTimeKey = `Start Time ${i}`;
+        let endTimeKey = `End Time ${i}`;
+        let classNameKey = `Class Name and Section ${i}`;
+        let professorNameKey = `Professor First and Last Name ${i}`;
 
         if (student[dayKey]) {
-            // It's possible for a student to have classes on multiple days in one row, hence splitting by ','
             let days = student[dayKey].split(',');
             days.forEach(day => {
-                if (day.trim()) {
-                    let startTime = student[startTimeKey] ? student[startTimeKey].trim() : 'Start time not set';
-                    let endTime = student[endTimeKey] ? student[endTimeKey].trim() : 'End time not set';
-                    let className = student[classNameKey] ? student[classNameKey].trim() : '';
-                    let professorName = student[professorNameKey] ? student[professorNameKey].trim() : '';
-                    let scheduleStr = `${day.trim()}: ${startTime} - ${endTime}`;
-                    if (className || professorName) {
-                        scheduleStr += ` - ${className}, ${professorName}`;
-                    }
-                    scheduleEntries.push(scheduleStr);
+                let scheduleStr = `${day.trim()}: ${student[startTimeKey] || 'TBD'} - ${student[endTimeKey] || 'TBD'}`;
+                if (student[classNameKey]) {
+                    scheduleStr += `, ${student[classNameKey]}`;
                 }
+                if (student[professorNameKey]) {
+                    scheduleStr += `, ${student[professorNameKey]}`;
+                }
+                scheduleEntries.push(scheduleStr);
             });
         }
     }
-    console.log(`Raw schedule data for student ${student['First and Last Name']}:`, scheduleEntries);
+
     return scheduleEntries.length > 0 ? scheduleEntries.join('<br>') : 'No schedule info available';
 }
+
 
 
 // Add the event listener for the filter button and load data on DOMContentLoaded
