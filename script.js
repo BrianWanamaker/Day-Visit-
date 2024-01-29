@@ -1,4 +1,11 @@
 let csvData = [];
+const filters = {
+    'nameFilter': 'First and Last Name',
+    'pronounsFilter': 'What are your pronouns?',
+    'majorFilter': 'Major(s)',
+    'schoolFilter': 'Please select which school your major(s) is in.',
+    'minorFilter': 'Minor(s) if applicable'
+};
 
 // Function to fetch and initialize CSV data
 function fetchCsvDataAndInitialize() {
@@ -63,14 +70,6 @@ function updateDropdown(dropdownId, field, values) {
 
 // Function to filter data based on current dropdown selections
 function getFilteredData() {
-    const filters = {
-        'nameFilter': 'First and Last Name',
-        'pronounsFilter': 'What are your pronouns?',
-        'majorFilter': 'Major(s)',
-        'schoolFilter': 'Please select which school your major(s) is in.',
-        'minorFilter': 'Minor(s) if applicable'
-    };
-
     // Get day and time filter values
     const dayFilterValue = document.getElementById('dayFilter').value;
     const startTimeFilterValue = document.getElementById('startTimeFilter').value;
