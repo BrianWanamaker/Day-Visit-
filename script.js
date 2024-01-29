@@ -87,33 +87,34 @@ function updateTable() {
             row.insertCell().textContent = item[field];
         });
 
-        // Add a cell for the class schedule
+        // Add a cell for the class schedule, using the parseSchedule function to generate the content
         let scheduleCell = row.insertCell();
-        scheduleCell.innerHTML = item['schedule'] || 'No schedule info available';
+        scheduleCell.innerHTML = parseSchedule(item); // Call parseSchedule here to get the schedule HTML
     });
 }
+
 
 // Add the event listener for the filter button and load data on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', (event) => {
     document.querySelector('button').addEventListener('click', updateTable);
     fetchCsvDataAndInitialize();
-}); 
+});
 function parseSchedule(student) {
     // Initialize an array to hold schedule strings
     let scheduleEntries = [];
 
     // Handle the first set of schedule data (without numeric suffix)
-    let days = student["Day(s) of the Week"];
-    if (days) {
-        let times = days.split(',').map((day, index) => {
-            return `${day.trim()}: ${student["Start Time"]} - ${student["End Time"]}`;
-        }).join(', ');
-        let classInfo = student["Class Name and Section"] ? `Class: ${student["Class Name and Section"]}` : '';
-        let professorInfo = student["Professor First and Last Name"] ? `, Prof: ${student["Professor First and Last Name"]}` : '';
-        scheduleEntries.push(`${times} ${classInfo}${professorInfo}`);
-    }
+    let days = student["Day(s) of the Week"].split(',');
+    let startTimes = student["Start Time"].split(',');
+    let endTimes = student["End Time"].split(',');
+    days.forEach((day, index) => {
+        if (day.trim() && startTimes[index] && endTimes[index]) {
+            let classAndProfessorInfo = student["Class Name and Section"] ? `${student["Class Name and Section"]}, ${student["Professor First and Last Name"]}` : '';
+            scheduleEntries.push(`${day.trim()}: ${startTimes[index].trim()} - ${endTimes[index].trim()}, ${classAndProfessorInfo}`);
+        }
+    });
 
-    // Handle the rest of the schedule data (with numeric suffixes)
+    // Repeat the process for the rest of the schedule data (with numeric suffixes)
     for (let i = 2; i <= 9; i++) {
         let dayKey = `Day(s) of the Week ${i}`;
         let startTimeKey = `Start Time ${i}`;
@@ -121,20 +122,23 @@ function parseSchedule(student) {
         let classNameKey = `Class Name and Section ${i}`;
         let professorNameKey = `Professor First and Last Name ${i}`;
 
-        days = student[dayKey];
-        if (days) {
-            let times = days.split(',').map((day) => {
-                return `${day.trim()}: ${student[startTimeKey]} - ${student[endTimeKey]}`;
-            }).join(', ');
-            let classInfo = student[classNameKey] ? `Class: ${student[classNameKey]}` : '';
-            let professorInfo = student[professorNameKey] ? `, Prof: ${student[professorNameKey]}` : '';
-            scheduleEntries.push(`${times} ${classInfo}${professorInfo}`);
+        if (student[dayKey]) {
+            let dayArray = student[dayKey].split(',');
+            let startTimeArray = student[startTimeKey] ? student[startTimeKey].split(',') : [];
+            let endTimeArray = student[endTimeKey] ? student[endTimeKey].split(',') : [];
+            dayArray.forEach((day, index) => {
+                if (day.trim() && startTimeArray[index] && endTimeArray[index]) {
+                    let classAndProfessorInfo = student[classNameKey] ? `${student[classNameKey]}, ${student[professorNameKey]}` : '';
+                    scheduleEntries.push(`${day.trim()}: ${startTimeArray[index].trim()} - ${endTimeArray[index].trim()}, ${classAndProfessorInfo}`);
+                }
+            });
         }
     }
 
-    // If there are no schedule entries, return 'No schedule info available'
-    return scheduleEntries.length > 0 ? scheduleEntries.join('<br>') : 'No schedule info available';
+    // Join the individual schedule entries with a line break
+    return scheduleEntries.join('<br>') || 'No schedule info available';
 }
+
 
 // Add the event listener for the filter button and load data on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', (event) => {
