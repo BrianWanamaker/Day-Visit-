@@ -154,7 +154,8 @@ function formatTime(time) {
 document.addEventListener('DOMContentLoaded', (event) => {
     document.querySelector('button').addEventListener('click', updateTableAndDropdowns);
     fetchJsonDataAndInitialize(); // Call this function directly, no need for window.onload
-}); function parseSchedule(student) {
+}); 
+function parseSchedule(student) {
     // Helper function to convert time string to a number for comparison
     const timeToNumber = (timeStr) => {
         if (!timeStr || timeStr.trim() === '') return null;
@@ -167,46 +168,55 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return hours * 60 + minutes;
     };
 
-    // Convert all start times to numbers for comparison
-    let startTimes = student["Start Time"].map(timeToNumber);
-    let endTimes = student["End Time"];  // Use as is for now, we'll handle empty entries later
+    let scheduleEntries = student["Day(s) of the Week"].map((days, index) => ({
+        days: days ? days.split(',').map(day => day.trim()) : [],
+        startTime: student["Start Time"][index],
+        endTime: student["End Time"][index] || "", // Use the value from the "End Time" array, if it's empty use an empty string
+        startTimeNumber: timeToNumber(student["Start Time"][index]),
+        endTimeNumber: timeToNumber(student["End Time"][index])
+    }));
+
     let individualEndTime = student["End time"] ? student["End time"].trim() : null;
     let individualEndTimeNumber = individualEndTime ? timeToNumber(individualEndTime) : null;
 
-    // Insert/update the individualEndTime in the correct slot if it exists
     if (individualEndTimeNumber !== null) {
+        // Find the right slot to insert/update the individual end time
         let inserted = false;
-        for (let i = 0; i < startTimes.length; i++) {
-            if (startTimes[i] !== null && startTimes[i] < individualEndTimeNumber &&
-                (i === startTimes.length - 1 || startTimes[i + 1] > individualEndTimeNumber)) {
-                if (!endTimes[i] || timeToNumber(endTimes[i]) > individualEndTimeNumber) {
-                    endTimes[i] = individualEndTime;  // Insert or update the individualEndTime
-                    inserted = true;
-                    break;
-                }
+        for (let entry of scheduleEntries) {
+            if (entry.startTimeNumber !== null && individualEndTimeNumber > entry.startTimeNumber &&
+                (entry.endTimeNumber === null || individualEndTimeNumber < entry.endTimeNumber)) {
+                entry.endTime = individualEndTime; // Update the end time
+                entry.endTimeNumber = individualEndTimeNumber; // Update the numeric end time
+                inserted = true;
+                break;
             }
         }
 
-        // If it wasn't inserted and is earlier than all start times, add at the start
+        // If the individual end time was not inserted, it's after all other times
         if (!inserted) {
-            startTimes.unshift(individualEndTimeNumber);
-            endTimes.unshift(individualEndTime);
+            scheduleEntries.push({
+                days: [], // Unknown days, leaving it empty or you can assign a default value
+                startTime: individualEndTime, // No start time for this end time, so using the end time as a placeholder
+                endTime: individualEndTime,
+                startTimeNumber: individualEndTimeNumber,
+                endTimeNumber: individualEndTimeNumber
+            });
         }
     }
 
-    // Build the schedule combining days with start times and end times, handle empty end times
-    let schedule = student["Day(s) of the Week"].flatMap((days, index) => {
-        if (!days) return [];  // Skip if no days
-
-        return days.split(',').map(day => ({
-            day: day.trim(),
-            startTime: student["Start Time"][index] || "",  // Use empty string if no start time
-            endTime: endTimes[index] || individualEndTime || ""  // Use end time if available, individual end time if not, otherwise empty
+    // Flatten the days and create the final schedule array
+    let schedule = scheduleEntries.flatMap(entry => {
+        if (entry.days.length === 0) return []; // Skip if no days
+        return entry.days.map(day => ({
+            day: day,
+            startTime: entry.startTime,
+            endTime: entry.endTime
         }));
     });
 
     return schedule;
 }
+
 
 
 // Example usage:
