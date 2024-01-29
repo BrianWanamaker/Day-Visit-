@@ -1,8 +1,16 @@
 let csvData = [];
 
+const filters = {
+    'nameFilter': 'First and Last Name',
+    'pronounsFilter': 'What are your pronouns?',
+    'majorFilter': 'Major(s)',
+    'schoolFilter': 'Please select which school your major(s) is in.',
+    'minorFilter': 'Minor(s) if applicable'
+};
+
 // Function to fetch and initialize CSV data
 function fetchCsvDataAndInitialize() {
-    fetch('Host Info 2024 (Responses) - Form Responses 1.csv')
+    fetch('responses_csv.csv')
         .then(response => response.text())
         .then(csvText => {
             Papa.parse(csvText, {
