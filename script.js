@@ -100,9 +100,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 function parseSchedule(student) {
     let scheduleEntries = [];
-
-    // Iterate through the expected number of class schedules
-    for (let i = 0; i < 10; i++) { // Adjust the loop based on the maximum number of classes
+    // Assuming you have up to 9 sets of classes, plus the set without a suffix
+    for (let i = 0; i <= 9; i++) {
         let suffix = i === 0 ? '' : ` ${i}`;
         let dayKey = `Day(s) of the Week${suffix}`;
         let startTimeKey = `Start Time${suffix}`;
@@ -110,29 +109,28 @@ function parseSchedule(student) {
         let classNameKey = `Class Name and Section${suffix}`;
         let professorNameKey = `Professor First and Last Name${suffix}`;
 
-        // Check if the student has data for this set of schedule keys
-        if (student.hasOwnProperty(dayKey) && student[dayKey].trim()) {
-            // Split by comma to support multiple days like "Monday, Wednesday"
+        if (student[dayKey]) {
+            // It's possible for a student to have classes on multiple days in one row, hence splitting by ','
             let days = student[dayKey].split(',');
             days.forEach(day => {
-                // Construct the schedule string for each day
-                let scheduleStr = `${day.trim()}: ${student[startTimeKey] || 'TBD'} - ${student[endTimeKey] || 'TBD'}`;
-                if (student[classNameKey]) {
-                    scheduleStr += `, ${student[classNameKey]}`;
-                    if (student[professorNameKey]) {
-                        scheduleStr += `, ${student[professorNameKey]}`;
+                if (day.trim()) {
+                    let startTime = student[startTimeKey] ? student[startTimeKey].trim() : 'Start time not set';
+                    let endTime = student[endTimeKey] ? student[endTimeKey].trim() : 'End time not set';
+                    let className = student[classNameKey] ? student[classNameKey].trim() : '';
+                    let professorName = student[professorNameKey] ? student[professorNameKey].trim() : '';
+                    let scheduleStr = `${day.trim()}: ${startTime} - ${endTime}`;
+                    if (className || professorName) {
+                        scheduleStr += ` - ${className}, ${professorName}`;
                     }
+                    scheduleEntries.push(scheduleStr);
                 }
-                scheduleEntries.push(scheduleStr);
             });
         }
     }
-
-    // Log the raw schedule data to the console for debugging purposes
     console.log(`Raw schedule data for student ${student['First and Last Name']}:`, scheduleEntries);
-
     return scheduleEntries.length > 0 ? scheduleEntries.join('<br>') : 'No schedule info available';
 }
+
 
 // Add the event listener for the filter button and load data on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', (event) => {
