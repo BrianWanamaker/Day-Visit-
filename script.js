@@ -91,15 +91,20 @@ function updateTable() {
     const tableBody = document.getElementById('tableData');
     tableBody.innerHTML = ''; // Clear existing table rows
 
-    filteredData.forEach(item => {
+    // Filter out entries with no student name
+    const validData = filteredData.filter(item => item['First and Last Name'].trim() !== '');
+
+    validData.forEach(item => {
         let row = tableBody.insertRow();
         Object.values(filters).forEach(field => {
-            row.insertCell().textContent = item[field];
+            let cellValue = item[field] ? item[field].trim() : '';
+            row.insertCell().textContent = cellValue;
         });
 
         // Add a cell for the class schedule, using the parseSchedule function to generate the content
         let scheduleCell = row.insertCell();
-        scheduleCell.innerHTML = parseSchedule(item); // Call parseSchedule here to get the schedule HTML
+        let scheduleContent = parseSchedule(item);
+        scheduleCell.innerHTML = scheduleContent ? scheduleContent : 'No schedule info';
     });
 }
 function parseSchedule(student) {
@@ -114,26 +119,32 @@ function parseSchedule(student) {
         let classNameKey = `Class Name and Section${suffix}`;
         let professorNameKey = `Professor First and Last Name${suffix}`;
 
-        if (student[dayKey] && student[startTimeKey] && student[classNameKey]) {
-            // Assuming the day field contains multiple days separated by commas
-            let days = student[dayKey].split(',');
-            days.forEach(day => {
-                // Ensure the day string is valid
-                if (day.replace(/['"]+/g, '').trim()) {
-                    let startTime = student[startTimeKey].replace(/['"]+/g, '').trim();
-                    let endTime = student[endTimeKey] ? student[endTimeKey].replace(/['"]+/g, '').trim() : 'TBD';
-                    let className = student[classNameKey].replace(/['"]+/g, '').trim();
-                    let professorName = student[professorNameKey] ? student[professorNameKey].replace(/['"]+/g, '').trim() : 'Professor not set';
-                    let scheduleStr = `${day.trim()}: ${className} with ${professorName} from ${startTime} to ${endTime}`;
-                    scheduleEntries.push(scheduleStr);
-                }
-            });
-        }
+        // If the dayKey is not present, continue to the next iteration
+        if (!student[dayKey] || student[dayKey].trim() === "") continue;
+
+        // Splitting the days and removing quotes and extra spaces
+        let days = student[dayKey].split(',').map(day => day.replace(/['"]+/g, '').trim());
+
+        days.forEach(day => {
+            // Skip if the day is an empty string
+            if (!day) return;
+
+            // Getting the rest of the information
+            let startTime = student[startTimeKey] ? student[startTimeKey].replace(/['"]+/g, '').trim() : 'TBD';
+            let endTime = student[endTimeKey] ? student[endTimeKey].replace(/['"]+/g, '').trim() : 'TBD';
+            let className = student[classNameKey] ? student[classNameKey].replace(/['"]+/g, '').trim() : 'Class not set';
+            let professorName = student[professorNameKey] ? student[professorNameKey].replace(/['"]+/g, '').trim() : 'Professor not set';
+
+            // Construct the schedule string
+            let scheduleStr = `${day}: ${className} with ${professorName} from ${startTime} to ${endTime}`;
+            scheduleEntries.push(scheduleStr);
+        });
     }
 
     // Combine all schedule entries into one string separated by HTML line breaks
     return scheduleEntries.length > 0 ? scheduleEntries.join('<br>') : '';
 }
+
 
 
 // Add the event listener for the filter button and load data on DOMContentLoaded
