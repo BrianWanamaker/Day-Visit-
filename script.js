@@ -93,52 +93,46 @@ function updateTable() {
     });
 }
 
-
 // Add the event listener for the filter button and load data on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', (event) => {
     document.querySelector('button').addEventListener('click', updateTable);
     fetchCsvDataAndInitialize();
 });
 function parseSchedule(student) {
-    // Initialize an array to hold schedule strings
     let scheduleEntries = [];
 
-    // Handle the first set of schedule data (without numeric suffix)
-    let days = student["Day(s) of the Week"].split(',');
-    let startTimes = student["Start Time"].split(',');
-    let endTimes = student["End Time"].split(',');
-    days.forEach((day, index) => {
-        if (day.trim() && startTimes[index] && endTimes[index]) {
-            let classAndProfessorInfo = student["Class Name and Section"] ? `${student["Class Name and Section"]}, ${student["Professor First and Last Name"]}` : '';
-            scheduleEntries.push(`${day.trim()}: ${startTimes[index].trim()} - ${endTimes[index].trim()}, ${classAndProfessorInfo}`);
-        }
-    });
+    // Iterate through the expected number of class schedules
+    for (let i = 0; i < 10; i++) { // Adjust the loop based on the maximum number of classes
+        let suffix = i === 0 ? '' : ` ${i}`;
+        let dayKey = `Day(s) of the Week${suffix}`;
+        let startTimeKey = `Start Time${suffix}`;
+        let endTimeKey = `End Time${suffix}`;
+        let classNameKey = `Class Name and Section${suffix}`;
+        let professorNameKey = `Professor First and Last Name${suffix}`;
 
-    // Repeat the process for the rest of the schedule data (with numeric suffixes)
-    for (let i = 2; i <= 9; i++) {
-        let dayKey = `Day(s) of the Week ${i}`;
-        let startTimeKey = `Start Time ${i}`;
-        let endTimeKey = `End Time ${i}`;
-        let classNameKey = `Class Name and Section ${i}`;
-        let professorNameKey = `Professor First and Last Name ${i}`;
-
-        if (student[dayKey]) {
-            let dayArray = student[dayKey].split(',');
-            let startTimeArray = student[startTimeKey] ? student[startTimeKey].split(',') : [];
-            let endTimeArray = student[endTimeKey] ? student[endTimeKey].split(',') : [];
-            dayArray.forEach((day, index) => {
-                if (day.trim() && startTimeArray[index] && endTimeArray[index]) {
-                    let classAndProfessorInfo = student[classNameKey] ? `${student[classNameKey]}, ${student[professorNameKey]}` : '';
-                    scheduleEntries.push(`${day.trim()}: ${startTimeArray[index].trim()} - ${endTimeArray[index].trim()}, ${classAndProfessorInfo}`);
+        // Check if the student has data for this set of schedule keys
+        if (student.hasOwnProperty(dayKey) && student[dayKey].trim()) {
+            // Split by comma to support multiple days like "Monday, Wednesday"
+            let days = student[dayKey].split(',');
+            days.forEach(day => {
+                // Construct the schedule string for each day
+                let scheduleStr = `${day.trim()}: ${student[startTimeKey] || 'TBD'} - ${student[endTimeKey] || 'TBD'}`;
+                if (student[classNameKey]) {
+                    scheduleStr += `, ${student[classNameKey]}`;
+                    if (student[professorNameKey]) {
+                        scheduleStr += `, ${student[professorNameKey]}`;
+                    }
                 }
+                scheduleEntries.push(scheduleStr);
             });
         }
     }
 
-    // Join the individual schedule entries with a line break
-    return scheduleEntries.join('<br>') || 'No schedule info available';
-}
+    // Log the raw schedule data to the console for debugging purposes
+    console.log(`Raw schedule data for student ${student['First and Last Name']}:`, scheduleEntries);
 
+    return scheduleEntries.length > 0 ? scheduleEntries.join('<br>') : 'No schedule info available';
+}
 
 // Add the event listener for the filter button and load data on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', (event) => {
