@@ -154,8 +154,7 @@ function formatTime(time) {
 document.addEventListener('DOMContentLoaded', (event) => {
     document.querySelector('button').addEventListener('click', updateTableAndDropdowns);
     fetchJsonDataAndInitialize(); // Call this function directly, no need for window.onload
-});
-function parseSchedule(student) {
+}); function parseSchedule(student) {
     // Helper function to convert time string to a number for comparison
     const timeToNumber = (timeStr) => {
         if (!timeStr || timeStr.trim() === '') return null;
@@ -168,13 +167,13 @@ function parseSchedule(student) {
         return hours * 60 + minutes;
     };
 
-    // Extract and convert all start times and the individual end time to numbers for comparison
+    // Convert all start times to numbers for comparison
     let startTimes = student["Start Time"].map(timeToNumber);
-    let endTimes = student["End Time"].map(time => time || "");  // Preserve empty strings for alignment
+    let endTimes = student["End Time"];  // Use as is for now, we'll handle empty entries later
     let individualEndTime = student["End time"] ? student["End time"].trim() : null;
     let individualEndTimeNumber = individualEndTime ? timeToNumber(individualEndTime) : null;
 
-    // If individualEndTime exists, find the right slot to insert/update it
+    // Insert/update the individualEndTime in the correct slot if it exists
     if (individualEndTimeNumber !== null) {
         let inserted = false;
         for (let i = 0; i < startTimes.length; i++) {
@@ -195,14 +194,14 @@ function parseSchedule(student) {
         }
     }
 
-    // Build the schedule combining days with the aligned start times and end times
+    // Build the schedule combining days with start times and end times, handle empty end times
     let schedule = student["Day(s) of the Week"].flatMap((days, index) => {
         if (!days) return [];  // Skip if no days
 
         return days.split(',').map(day => ({
             day: day.trim(),
             startTime: student["Start Time"][index] || "",  // Use empty string if no start time
-            endTime: endTimes[index] || ""  // Use aligned end time, empty string if none
+            endTime: endTimes[index] || individualEndTime || ""  // Use end time if available, individual end time if not, otherwise empty
         }));
     });
 
