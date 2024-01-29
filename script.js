@@ -98,3 +98,49 @@ document.addEventListener('DOMContentLoaded', (event) => {
     document.querySelector('button').addEventListener('click', updateTable);
     fetchCsvDataAndInitialize();
 });
+
+function parseSchedule(student) {
+    // Initialize an array to hold schedule strings
+    let scheduleEntries = [];
+
+    // Iterate over the schedule-related columns
+    for (let i = 1; i <= 9; i++) { // Assuming you have 9 sets of schedule-related columns
+        let dayKey = `Day(s) of the Week ${i !== 1 ? i : ''}`;
+        let startTimeKey = `Start Time ${i !== 1 ? i : ''}`;
+        let endTimeKey = `End Time ${i !== 1 ? i : ''}`;
+        let classNameKey = `Class Name and Section ${i !== 1 ? i : ''}`;
+        let professorNameKey = `Professor First and Last Name ${i !== 1 ? i : ''}`;
+
+        if (student[dayKey] && student[startTimeKey] && student[endTimeKey]) {
+            scheduleEntries.push(`${student[dayKey]}: ${student[startTimeKey]} - ${student[endTimeKey]}, ${student[classNameKey]}, ${student[professorNameKey]}`);
+        }
+    }
+
+    // Join the individual schedule entries with a line break
+    return scheduleEntries.join('<br>') || 'No schedule info available';
+}
+
+// Update the table based on the filtered data
+function updateTable() {
+    const filteredData = getFilteredData();
+    const tableBody = document.getElementById('tableData');
+    tableBody.innerHTML = ''; // Clear existing table rows
+
+    filteredData.forEach(item => {
+        let row = tableBody.insertRow();
+        Object.values(filters).forEach(field => {
+            row.insertCell().textContent = item[field];
+        });
+
+        // Add a cell for the class schedule
+        let scheduleCell = row.insertCell();
+        // Call parseSchedule for each item and set it as innerHTML of the schedule cell
+        scheduleCell.innerHTML = parseSchedule(item);
+    });
+}
+
+// Add the event listener for the filter button and load data on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', (event) => {
+    document.querySelector('button').addEventListener('click', updateTable);
+    fetchCsvDataAndInitialize();
+});
