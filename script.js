@@ -92,22 +92,27 @@ function updateTable() {
     tableBody.innerHTML = ''; // Clear existing table rows
 
     filteredData.forEach(item => {
-        // Check if the name exists and is not just whitespace
-        if (item['First and Last Name'] && item['First and Last Name'].trim()) {
-            let row = tableBody.insertRow();
-            Object.values(filters).forEach(field => {
-                // Safely trim the value if it exists
-                let cellValue = item[field] && typeof item[field] === 'string' ? item[field].trim() : '';
-                row.insertCell().textContent = cellValue;
-            });
+        // Check if the name exists and is a string
+        if (item['First and Last Name'] && typeof item['First and Last Name'] === 'string') {
+            // Trim the name and check if it's not empty after trimming
+            const trimmedName = item['First and Last Name'].trim();
+            if (trimmedName) {
+                let row = tableBody.insertRow();
+                Object.values(filters).forEach(field => {
+                    // Check if the field is a string before trimming
+                    let cellValue = typeof item[field] === 'string' ? item[field].trim() : '';
+                    row.insertCell().textContent = cellValue;
+                });
 
-            // Add a cell for the class schedule, using the parseSchedule function to generate the content
-            let scheduleCell = row.insertCell();
-            let scheduleContent = parseSchedule(item);
-            scheduleCell.innerHTML = scheduleContent ? scheduleContent : 'No schedule info';
+                // Add a cell for the class schedule, using the parseSchedule function to generate the content
+                let scheduleCell = row.insertCell();
+                let scheduleContent = parseSchedule(item);
+                scheduleCell.innerHTML = scheduleContent ? scheduleContent : 'No schedule info';
+            }
         }
     });
 }
+
 
 function parseSchedule(student) {
     let scheduleEntries = [];
