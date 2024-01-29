@@ -118,6 +118,7 @@
       "11:50:00 AM",
       "12:50:00 PM",
       "1:50:00 PM",
+      "1:15:00 PM",
       "3:15:00 PM",
       "",
       "",
@@ -146,7 +147,7 @@
       "",
       ""
    ],
-   "End time": "1:15:00 PM",
+   "End time":"",
    "Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [9:00am-10:00am]": "",
    "Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [10:00am-11:00am]": "",
    "Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [11:00am-12:00pm]": "",
