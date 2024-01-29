@@ -168,51 +168,47 @@ function parseSchedule(student) {
         return hours * 60 + minutes;
     };
 
-    // Check if the student has an individual "End time" field and store its numeric value
+    // Extract and convert all start times and the individual end time to numbers for comparison
+    let startTimes = student["Start Time"].map(timeToNumber);
+    let endTimes = student["End Time"].map(time => time || "");  // Preserve empty strings for alignment
     let individualEndTime = student["End time"] ? student["End time"].trim() : null;
     let individualEndTimeNumber = individualEndTime ? timeToNumber(individualEndTime) : null;
 
-    let schedule = student["Day(s) of the Week"].flatMap((days, index) => {
-        if (!days) return [];  // Skip if no days
-
-        // Split days and create a schedule entry for each day
-        return days.split(',').map(day => ({
-            day: day.trim(),
-            startTime: student["Start Time"][index],
-            endTime: student["End Time"][index] || individualEndTime  // Default to individualEndTime if "End Time" is not present
-        }));
-    });
-
-    // If an individual end time exists, find the correct position to insert/update it
-    if (individualEndTimeNumber) {
+    // If individualEndTime exists, find the right slot to insert/update it
+    if (individualEndTimeNumber !== null) {
         let inserted = false;
-
-        for (let i = 0; i < schedule.length; i++) {
-            let currentStartTimeNumber = timeToNumber(schedule[i].startTime);
-            let nextStartTimeNumber = (i < schedule.length - 1) ? timeToNumber(schedule[i + 1].startTime) : null;
-
-            // Check if individualEndTime fits between current start time and the next start time
-            if (individualEndTimeNumber > currentStartTimeNumber &&
-                (nextStartTimeNumber === null || individualEndTimeNumber < nextStartTimeNumber)) {
-                // Update the end time for this slot
-                schedule[i].endTime = individualEndTime;
-                inserted = true;
-                break;
+        for (let i = 0; i < startTimes.length; i++) {
+            if (startTimes[i] !== null && startTimes[i] < individualEndTimeNumber &&
+                (i === startTimes.length - 1 || startTimes[i + 1] > individualEndTimeNumber)) {
+                if (!endTimes[i] || timeToNumber(endTimes[i]) > individualEndTimeNumber) {
+                    endTimes[i] = individualEndTime;  // Insert or update the individualEndTime
+                    inserted = true;
+                    break;
+                }
             }
         }
 
-        // If individualEndTime was not inserted, and it's earlier than all start times, prepend it
-        if (!inserted && schedule.length > 0) {
-            schedule.unshift({
-                day: schedule[0].day,  // Assuming the day is the same as the first schedule item
-                startTime: individualEndTime,  // Use the individual end time as start time, as we don't have the exact start time
-                endTime: individualEndTime
-            });
+        // If it wasn't inserted and is earlier than all start times, add at the start
+        if (!inserted) {
+            startTimes.unshift(individualEndTimeNumber);
+            endTimes.unshift(individualEndTime);
         }
     }
 
+    // Build the schedule combining days with the aligned start times and end times
+    let schedule = student["Day(s) of the Week"].flatMap((days, index) => {
+        if (!days) return [];  // Skip if no days
+
+        return days.split(',').map(day => ({
+            day: day.trim(),
+            startTime: student["Start Time"][index] || "",  // Use empty string if no start time
+            endTime: endTimes[index] || ""  // Use aligned end time, empty string if none
+        }));
+    });
+
     return schedule;
 }
+
 
 // Example usage:
 let students = jsonData.map(student => ({
