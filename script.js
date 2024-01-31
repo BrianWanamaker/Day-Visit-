@@ -1,5 +1,5 @@
 $(document).ready(function () {
-
+    let csvData = [];
     const filters = {
         'nameFilter': 'First and Last Name',
         'pronounsFilter': 'What are your pronouns?',
@@ -7,7 +7,7 @@ $(document).ready(function () {
         'schoolFilter': 'Please select which school your major(s) is in.',
         'minorFilter': 'Minor(s) if applicable'
     };
-    
+
     const csvFileUrl = 'responses_csv.csv';
     var data = $.csv.toObjects(csvFileUrl);
     console.log(data);
