@@ -4,6 +4,7 @@ $(document).ready(function () {
         'nameFilter': 'First and Last Name',
         'pronounsFilter': 'What are your pronouns?',
         'majorFilter': 'Major(s)',
+        'startTime' : "Start Time",
         'schoolFilter': 'Please select which school your major(s) is in.',
         'minorFilter': 'Minor(s) if applicable'
     };
