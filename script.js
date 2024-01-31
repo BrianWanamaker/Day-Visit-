@@ -4,7 +4,7 @@ $(document).ready(function () {
         'nameFilter': 'First and Last Name',
         'pronounsFilter': 'What are your pronouns?',
         'majorFilter': 'Major(s)',
-        'startTime' : "Start Time",
+        'startTime': "Start Time",
         'schoolFilter': 'Please select which school your major(s) is in.',
         'minorFilter': 'Minor(s) if applicable'
     };
@@ -72,38 +72,34 @@ $(document).ready(function () {
 
     function parseSchedule(student) {
         let scheduleEntries = [];
-    
-        // Loop through the possible schedule slots (up to 9 based on your CSV structure)
+
+        // Loop through the possible schedule slots, assuming there are up to 9 based on your CSV structure
         for (let i = 0; i <= 9; i++) {
             let suffix = i === 0 ? '' : ` ${i}`;
             let dayKey = `Day(s) of the Week${suffix}`;
             let startTimeKey = `Start Time${suffix}`;
             let endTimeKey = `End Time${suffix}`;
-            let classNameKey = `Class Name and Section${suffix}`;
-            let professorNameKey = `Professor First and Last Name${suffix}`;
-    
-            // Check if the day of the week is defined for the current slot
-            if (student[dayKey]) {
-                // Assume days are comma-separated and split them
+
+            // Check if the day, start time, and end time exist and are not empty
+            if (student[dayKey] && student[startTimeKey] && student[endTimeKey]) {
                 let days = student[dayKey].split(',');
                 days.forEach(day => {
-                    // Trim each day and build the schedule string
-                    day = day.trim();
-                    let startTime = student[startTimeKey] ? student[startTimeKey].trim() : 'TBD';
-                    let endTime = student[endTimeKey] ? student[endTimeKey].trim() : 'TBD';
-                    let className = student[classNameKey] ? student[classNameKey].trim() : 'No class name';
-                    let professorName = student[professorNameKey] ? student[professorNameKey].trim() : 'No professor';
-    
-                    let scheduleStr = `${day}: ${className} with ${professorName} from ${startTime} to ${endTime}`;
+                    day = day.trim(); // Clean up the day string
+                    let startTime = student[startTimeKey].trim();
+                    let endTime = student[endTimeKey].trim();
+
+                    // Format the string as "Day: StartTime - EndTime"
+                    let scheduleStr = `${day}: ${startTime} - ${endTime}`;
                     scheduleEntries.push(scheduleStr);
                 });
             }
         }
-    
-        // Combine all schedule entries into one string with line breaks
+
+        // Combine all schedule entries into one string separated by HTML line breaks
         return scheduleEntries.join('<br>');
     }
-    
+
+
 
     // Event listeners
     $('select').on('change', updateTable);
