@@ -1,22 +1,14 @@
 $(document).ready(function () {
-    let csvData = [];
-    const filters = {
-        'nameFilter': 'First and Last Name',
-        'pronounsFilter': 'What are your pronouns?',
-        'majorFilter': 'Major(s)',
-        'schoolFilter': 'Please select which school your major(s) is in.',
-        'minorFilter': 'Minor(s) if applicable'
-    };
+    const csvFileUrl = 'responses_csv.csv';
 
     function fetchCsvDataAndInitialize() {
         $.ajax({
-            url: 'responses_csv.csv',
+            url: csvFileUrl,
             dataType: 'text',
             success: function (data) {
-                // Convert the CSV data to objects
-                csvData = $.csv.toObjects(data);
-                initializeDropdowns();
-                updateTable();
+                const csvData = $.csv.toObjects(data);
+                initializeDropdowns(csvData);
+                updateTable(csvData);
             }
         });
     }
@@ -49,30 +41,24 @@ $(document).ready(function () {
         });
     }
 
-    function updateTable() {
-        const filteredData = getFilteredData();
+    function updateTable(csvData) {
+        const filteredData = getFilteredData(csvData);
         const tableBody = $('#tableData');
         tableBody.empty();
 
         filteredData.forEach(function (item) {
-            if (item['First and Last Name'] && item['First and Last Name'].trim()) {
-                let row = $('<tr></tr>');
-                Object.values(filters).forEach(function (fieldName) {
-                    let cellValue = item[fieldName] && typeof item[fieldName] === 'string' ? item[fieldName].trim() : '';
-                    row.append($('<td></td>').text(cellValue));
-                });
-
-                let scheduleContent = parseSchedule(item);
-                row.append($('<td></td>').html(scheduleContent ? scheduleContent : ''));
-                tableBody.append(row);
-            }
+            const row = $('<tr></tr>');
+            // Add cells for each column...
+            const unavailableTimes = compileSchedule(item);
+            row.append($('<td></td>').html(unavailableTimes));
+            tableBody.append(row);
         });
     }
 
-    function parseSchedule(student) {
+    function compileSchedule(student) {
         let scheduleEntries = [];
-    
-        // Loop through the possible schedule slots (up to 9 based on your CSV structure)
+
+        // Loop through the possible schedule slots
         for (let i = 0; i <= 9; i++) {
             let suffix = i === 0 ? '' : ` ${i}`;
             let dayKey = `Day(s) of the Week${suffix}`;
@@ -80,29 +66,29 @@ $(document).ready(function () {
             let endTimeKey = `End Time${suffix}`;
             let classNameKey = `Class Name and Section${suffix}`;
             let professorNameKey = `Professor First and Last Name${suffix}`;
-    
-            // Check if the day of the week is defined for the current slot
-            if (student[dayKey]) {
-                // Assume days are comma-separated and split them
-                let days = student[dayKey].split(',');
-                days.forEach(day => {
-                    // Trim each day and build the schedule string
-                    day = day.trim();
+
+            // Assuming that each student could have classes on multiple days, split the days
+            let days = student[dayKey] ? student[dayKey].split(',') : [];
+
+            days.forEach(day => {
+                day = day.trim(); // Trim each day of any whitespace
+                if (day) { // If there is a day listed
                     let startTime = student[startTimeKey] ? student[startTimeKey].trim() : 'TBD';
                     let endTime = student[endTimeKey] ? student[endTimeKey].trim() : 'TBD';
                     let className = student[classNameKey] ? student[classNameKey].trim() : 'No class name';
                     let professorName = student[professorNameKey] ? student[professorNameKey].trim() : 'No professor';
-    
-                    let scheduleStr = `${day}: ${className} with ${professorName} from ${startTime} to ${endTime}`;
+
+                    // Format the string as "Day: StartTime - EndTime, ClassName with ProfessorName"
+                    let scheduleStr = `${day}: ${startTime} - ${endTime}, ${className} with ${professorName}`;
                     scheduleEntries.push(scheduleStr);
-                });
-            }
+                }
+            });
         }
-    
-        // Combine all schedule entries into one string with line breaks
+
+        // Combine all schedule entries into one string separated by HTML line breaks
         return scheduleEntries.join('<br>');
     }
-    
+
 
     // Event listeners
     $('select').on('change', updateTable);
