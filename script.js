@@ -1,4 +1,13 @@
 $(document).ready(function () {
+
+    const filters = {
+        'nameFilter': 'First and Last Name',
+        'pronounsFilter': 'What are your pronouns?',
+        'majorFilter': 'Major(s)',
+        'schoolFilter': 'Please select which school your major(s) is in.',
+        'minorFilter': 'Minor(s) if applicable'
+    };
+    
     const csvFileUrl = 'responses_csv.csv';
     var data = $.csv.toObjects(csvFileUrl);
     console.log(data);
@@ -14,8 +23,6 @@ $(document).ready(function () {
             }
         });
     }
-    
-
 
     function initializeDropdowns() {
         // Populate dropdowns based on CSV data
