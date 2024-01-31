@@ -1,5 +1,7 @@
 $(document).ready(function () {
     const csvFileUrl = 'responses_csv.csv';
+    var data = $.csv.toObjects(csvFileUrl);
+    console.log(data);
 
     function fetchCsvDataAndInitialize() {
         $.ajax({
@@ -12,6 +14,8 @@ $(document).ready(function () {
             }
         });
     }
+    
+
 
     function initializeDropdowns() {
         // Populate dropdowns based on CSV data
@@ -66,7 +70,12 @@ $(document).ready(function () {
             let endTimeKey = `End Time${suffix}`;
             let classNameKey = `Class Name and Section${suffix}`;
             let professorNameKey = `Professor First and Last Name${suffix}`;
-
+            console.log(suffix);
+            console.log(dayKey);
+            console.log(startTimeKey);
+            console.log(endTimeKey);
+            console.log(classNameKey);
+            console.log(professorNameKey);
             // Assuming that each student could have classes on multiple days, split the days
             let days = student[dayKey] ? student[dayKey].split(',') : [];
 
