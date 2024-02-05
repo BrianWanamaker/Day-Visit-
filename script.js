@@ -13,14 +13,55 @@ $(document).ready(function () {
     }
 
     // Method to extract unavailable times from the data
+    // Method to extract class schedules from the data
+    extractClasses(data) {
+      const classes = [];
+      for (let i = 1; i <= 8; i++) {
+        // Adjust the number based on how many sets of class data you have
+        if (
+          data[`Day(s) of the Week ${i}`] &&
+          data[`Start Time ${i}`] &&
+          data[`End Time ${i}`]
+        ) {
+          classes.push({
+            days: data[`Day(s) of the Week ${i}`]
+              .split(", ")
+              .map((day) => day.trim()),
+            startTime: data[`Start Time ${i}`],
+            endTime: data[`End Time ${i}`],
+            className: data[`Class Name and Section ${i}`],
+            professor: data[`Professor First and Last Name ${i}`],
+          });
+        }
+      }
+      return classes;
+    }
+
+    // Method to extract unavailable times from the data
     extractUnavailableTimes(data) {
-      // Logic to extract and format unavailable times
-      // Placeholder: just concatenating all unavailable times
-      return (
-        data[
-          "Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [9:00am-10:00am]"
-        ] + " ..."
-      );
+      const unavailableTimes = [];
+      // Assuming your CSV has specific fields for unavailable times
+      for (let i = 9; i <= 17; i++) {
+        // Adjust based on your actual time slots
+        if (
+          data[
+            `Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [${i}:00am-${
+              i + 1
+            }:00am]`
+          ]
+        ) {
+          unavailableTimes.push({
+            time: `${i}:00am-${i + 1}:00am`,
+            reason:
+              data[
+                `Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [${i}:00am-${
+                  i + 1
+                }:00am]`
+              ],
+          });
+        }
+      }
+      return unavailableTimes;
     }
 
     // Method to render this student as a table row
