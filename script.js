@@ -1,3 +1,4 @@
+let students = [];
 $(document).ready(function () {
   // Define the Student class
   class Student {
