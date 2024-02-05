@@ -1,126 +1,96 @@
 $(document).ready(function () {
-  let csvData = [];
-  const filters = {
-    nameFilter: "First and Last Name",
-    pronounsFilter: "What are your pronouns?",
-    majorFilter: "Major(s)",
-    startTime: "Start Time",
-    schoolFilter: "Please select which school your major(s) is in.",
-    minorFilter: "Minor(s) if applicable",
-  };
+  // Define the Student class
+  class Student {
+    constructor(data) {
+      this.name = data["First and Last Name"];
+      this.pronouns = data["What are your pronouns?"];
+      this.major = data["Major(s)"];
+      this.school = data["Please select which school your major(s) is in."];
+      this.minor = data["Minor(s) if applicable"];
+      this.unavailableTimes = this.extractUnavailableTimes(data);
+      // ... extract other fields as needed
+    }
 
-  function fetchCsvDataAndInitialize() {
+    // Method to extract unavailable times from the data
+    extractUnavailableTimes(data) {
+      // Logic to extract and format unavailable times
+      // Placeholder: just concatenating all unavailable times
+      return (
+        data[
+          "Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [9:00am-10:00am]"
+        ] + " ..."
+      );
+    }
+
+    // Method to render this student as a table row
+    toTableRow() {
+      return `
+                <tr>
+                    <td>${this.name}</td>
+                    <td>${this.pronouns}</td>
+                    <td>${this.major}</td>
+                    <td>${this.school}</td>
+                    <td>${this.minor}</td>
+                    <td>${this.unavailableTimes}</td>
+                </tr>
+            `;
+    }
+
+    // Method to check if this student matches the current filters
+    matchesFilters(filters) {
+      return (
+        (filters.name === "All" || this.name === filters.name) &&
+        (filters.pronouns === "All" || this.pronouns === filters.pronouns) &&
+        (filters.major === "All" || this.major === filters.major) &&
+        (filters.school === "All" || this.school === filters.school) &&
+        (filters.minor === "All" || this.minor === filters.minor) &&
+        // Add more conditions for each filter. For time filters, you'll need to compare times.
+        // This is a placeholder, you'll need to implement your logic for day and time comparison
+        (filters.day === "All" || this.unavailableTimes.includes(filters.day))
+      );
+    }
+  }
+
+  // Function to read the CSV file and parse it
+  function loadData() {
     $.ajax({
       url: "responses_csv.csv",
       dataType: "text",
-      success: function (data) {
-        // Convert the CSV data to objects
-        csvData = $.csv.toObjects(data);
-        initializeDropdowns();
-        updateTable();
-      },
-    });
+    }).done(successFunction);
   }
 
-  function initializeDropdowns() {
-    // Populate dropdowns based on CSV data
-    Object.keys(filters).forEach(function (filter) {
-      updateDropdown(
-        filter,
-        filters[filter],
-        csvData.map((item) => item[filters[filter]])
-      );
-    });
+  function successFunction(data) {
+    const parsedData = $.csv.toObjects(data);
+    const students = parsedData.map((row) => new Student(row));
+    displayData(students);
   }
 
-  function updateDropdown(dropdownId, fieldName, values) {
-    let uniqueValues = [...new Set(values)];
-    let dropdown = $(`#${dropdownId}`);
-    dropdown.empty();
-    dropdown.append(new Option(`All ${fieldName}`, "All", true, true));
-    uniqueValues.forEach(function (value) {
-      if (value) {
-        // Avoid adding empty values
-        dropdown.append(new Option(value, value));
-      }
-    });
-  }
-
-  function getFilteredData() {
-    return csvData.filter(function (item) {
-      return Object.entries(filters).every(function ([key, value]) {
-        let filterValue = $(`#${key}`).val();
-        return filterValue === "All" || item[value] === filterValue;
-      });
-    });
-  }
-
-  function updateTable() {
-    const filteredData = getFilteredData();
+  // Function to display the data in the table
+  function displayData(students, filters) {
     const tableBody = $("#tableData");
     tableBody.empty();
-
-    filteredData.forEach(function (item) {
-      if (item["First and Last Name"] && item["First and Last Name"].trim()) {
-        let row = $("<tr></tr>");
-        Object.values(filters).forEach(function (fieldName) {
-          let cellValue =
-            item[fieldName] && typeof item[fieldName] === "string"
-              ? item[fieldName].trim()
-              : "";
-          row.append($("<td></td>").text(cellValue));
-        });
-
-        let scheduleContent = parseSchedule(item);
-        row.append($("<td></td>").html(scheduleContent ? scheduleContent : ""));
-        tableBody.append(row);
+    students.forEach((student) => {
+      if (student.matchesFilters(filters)) {
+        tableBody.append(student.toTableRow());
       }
     });
   }
 
-  function parseSchedule(student) {
-    let scheduleEntries = [];
-
-    // Loop through the possible schedule slots
-    for (let i = 0; i <= 9; i++) {
-      let suffix = i === 0 ? "" : ` ${i}`;
-      let dayKey = `Day(s) of the Week${suffix}`;
-      let startTimeKey = `Start Time${suffix}`;
-      let endTimeKey = `End Time${suffix}`;
-      let classNameKey = `Class Name and Section${suffix}`;
-      let professorNameKey = `Professor First and Last Name${suffix}`;
-
-      // Check if the necessary details exist and are not empty
-      if (
-        student[dayKey] &&
-        student[startTimeKey] &&
-        student[endTimeKey] &&
-        student[classNameKey] &&
-        student[professorNameKey]
-      ) {
-        let days = student[dayKey].split(",");
-        days.forEach((day) => {
-          day = day.trim(); // Clean up the day string
-          let startTime = student[startTimeKey].trim();
-          let endTime = student[endTimeKey].trim();
-          let className = student[classNameKey].trim();
-          let professorName = student[professorNameKey].trim();
-
-          // Format the string as "Day: StartTime - EndTime, ClassName by ProfessorName"
-          let scheduleStr = `${day}: ${startTime} - ${endTime}, ${className} by ${professorName}`;
-          scheduleEntries.push(scheduleStr);
-        });
-      }
-    }
-
-    // Combine all schedule entries into one string separated by HTML line breaks
-    return scheduleEntries.join("<br>");
+  // Function to apply filters
+  function applyFilters() {
+    const filters = {
+      name: $("#nameFilter").val(),
+      pronouns: $("#pronounsFilter").val(),
+      major: $("#majorFilter").val(),
+      school: $("#schoolFilter").val(),
+      minor: $("#minorFilter").val(),
+      day: $("#dayFilter").val(),
+      startTime: $("#startTimeFilter").val(),
+      endTime: $("#endTimeFilter").val(),
+    };
+    displayData(students, filters);
   }
 
-  // Event listeners
-  $("select").on("change", updateTable);
-  $("button").on("click", updateTable);
-
-  // Initial data load
-  fetchCsvDataAndInitialize();
+  // Load the data when the document is ready
+  loadData();
 });
