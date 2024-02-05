@@ -93,6 +93,18 @@ $(document).ready(function () {
     }
   }
 
+  // Initialize a default filters object
+  const defaultFilters = {
+    name: "All",
+    pronouns: "All",
+    major: "All",
+    school: "All",
+    minor: "All",
+    day: "All",
+    startTime: "All",
+    endTime: "All",
+  };
+
   // Function to read the CSV file and parse it
   function loadData() {
     $.ajax({
@@ -104,7 +116,7 @@ $(document).ready(function () {
   function successFunction(data) {
     const parsedData = $.csv.toObjects(data);
     const students = parsedData.map((row) => new Student(row));
-    displayData(students);
+    displayData(students, defaultFilters); // Pass the default filters here
   }
 
   // Function to display the data in the table
