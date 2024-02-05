@@ -45,7 +45,7 @@ $(document).ready(function () {
         // Adjust based on your actual time slots
         if (
           data[
-            `Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [${i}:00am-${
+            `Please list times you are UNAVAILABLE tDo host (meetings, work, other commitments) [${i}:00am-${
               i + 1
             }:00am]`
           ]
@@ -66,16 +66,21 @@ $(document).ready(function () {
 
     // Method to render this student as a table row
     toTableRow() {
+      // Convert each object in the array to a string
+      let unavailableTimesStr = this.unavailableTimes
+        .map((time) => `Start: ${time.start}, End: ${time.end}`)
+        .join(", ");
+
       return `
-                <tr>
-                    <td>${this.name}</td>
-                    <td>${this.pronouns}</td>
-                    <td>${this.major}</td>
-                    <td>${this.school}</td>
-                    <td>${this.minor}</td>
-                    <td>${this.unavailableTimes}</td>
-                </tr>
-            `;
+    <tr>
+      <td>${this.name}</td>
+      <td>${this.pronouns}</td>
+      <td>${this.major}</td>
+      <td>${this.school}</td>
+      <td>${this.minor}</td>
+      <td>${unavailableTimesStr}</td>
+    </tr>
+  `;
     }
 
     // Method to check if this student matches the current filters
