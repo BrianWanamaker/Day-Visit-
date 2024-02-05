@@ -16,21 +16,23 @@ $(document).ready(function () {
     // Method to extract class schedules from the data
     extractClasses(data) {
       const classes = [];
-      for (let i = 1; i <= 8; i++) {
-        // Adjust the number based on how many sets of class data you have
+      for (let i = 9; i <= 17; i++) {
         if (
-          data[`Day(s) of the Week ${i}`] &&
-          data[`Start Time ${i}`] &&
-          data[`End Time ${i}`]
+          data[
+            `Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [${i}:00am-${
+              i + 1
+            }:00am]`
+          ]
         ) {
-          classes.push({
-            days: data[`Day(s) of the Week ${i}`]
-              .split(", ")
-              .map((day) => day.trim()),
-            startTime: data[`Start Time ${i}`],
-            endTime: data[`End Time ${i}`],
-            className: data[`Class Name and Section ${i}`],
-            professor: data[`Professor First and Last Name ${i}`],
+          unavailableTimes.push({
+            start: `${i}:00am`,
+            end: `${i + 1}:00am`,
+            reason:
+              data[
+                `Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [${i}:00am-${
+                  i + 1
+                }:00am]`
+              ],
           });
         }
       }
@@ -39,17 +41,18 @@ $(document).ready(function () {
 
     // Method to extract unavailable times from the data
     extractUnavailableTimes(data) {
+      console.log(data);
       const unavailableTimes = [];
       // Assuming your CSV has specific fields for unavailable times
       for (let i = 9; i <= 17; i++) {
-        // Adjust based on your actual time slots
         if (
           data[
-            `Please list times you are UNAVAILABLE tDo host (meetings, work, other commitments) [${i}:00am-${
+            `Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [${i}:00am-${
               i + 1
             }:00am]`
           ]
         ) {
+          console.log(`Found unavailable time for ${i}:00am-${i + 1}:00am`); // Debug log
           unavailableTimes.push({
             time: `${i}:00am-${i + 1}:00am`,
             reason:
@@ -61,6 +64,7 @@ $(document).ready(function () {
           });
         }
       }
+      console.log(unavailableTimes); // Debug log
       return unavailableTimes;
     }
 
