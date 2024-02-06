@@ -13,7 +13,16 @@ class Schedule {
   }
 
   addTimeSlot(timeSlot) {
-    this.timeSlots.push(timeSlot);
+    // Only add the timeSlot if it doesn't already exist in this.timeSlots
+    if (
+      !this.timeSlots.some(
+        (existingSlot) =>
+          existingSlot.start === timeSlot.start &&
+          existingSlot.end === timeSlot.end
+      )
+    ) {
+      this.timeSlots.push(timeSlot);
+    }
   }
 }
 
@@ -48,16 +57,16 @@ class Student {
   }
 
   toTableRow() {
-    let scheduleStr = this.schedule
-      .map((scheduleDay) =>
-        scheduleDay.timeSlots
-          .map(
-            (timeSlot) =>
-              `${scheduleDay.day} ${timeSlot.start}-${timeSlot.end}: ${timeSlot.className}`
-          )
-          .join(", ")
-      )
-      .join(", ");
+    let scheduleStr = "";
+    this.schedule.forEach((scheduleDay) =>
+      scheduleDay.timeSlots.forEach((timeSlot) => {
+        const timeSlotStr = `${scheduleDay.day} ${timeSlot.start}-${timeSlot.end}: ${timeSlot.className}`;
+        // Only add the timeSlotStr if it doesn't already exist in scheduleStr
+        if (!scheduleStr.includes(timeSlotStr)) {
+          scheduleStr += (scheduleStr ? ", " : "") + timeSlotStr;
+        }
+      })
+    );
 
     return `
       <tr>
@@ -83,6 +92,8 @@ class Student {
 }
 
 let students = [];
+let applyFilters;
+
 $(document).ready(function () {
   const defaultFilters = {
     name: "All",
@@ -102,7 +113,29 @@ $(document).ready(function () {
   function successFunction(data) {
     const parsedData = $.csv.toObjects(data);
     students = parsedData.map((row) => new Student(row));
+    populateFilters(students);
     displayData(students, defaultFilters);
+  }
+
+  function populateFilters(students) {
+    const names = new Set(students.map((student) => student.name));
+    const pronouns = new Set(students.map((student) => student.pronouns));
+    const majors = new Set(students.map((student) => student.major));
+    const schools = new Set(students.map((student) => student.school));
+    const minors = new Set(students.map((student) => student.minor));
+
+    populateDropdown("#nameFilter", names);
+    populateDropdown("#pronounsFilter", pronouns);
+    populateDropdown("#majorFilter", majors);
+    populateDropdown("#schoolFilter", schools);
+    populateDropdown("#minorFilter", minors);
+  }
+
+  function populateDropdown(dropdownId, options) {
+    const dropdown = $(dropdownId);
+    options.forEach((option) => {
+      dropdown.append(new Option(option, option));
+    });
   }
 
   function displayData(students, filters) {
@@ -115,7 +148,7 @@ $(document).ready(function () {
     });
   }
 
-  function applyFilters() {
+  applyFilters = function () {
     const filters = {
       name: $("#nameFilter").val(),
       pronouns: $("#pronounsFilter").val(),
@@ -124,7 +157,9 @@ $(document).ready(function () {
       minor: $("#minorFilter").val(),
     };
     displayData(students, filters);
-  }
+  };
 
   loadData();
 });
+
+window.applyFilters = applyFilters;
