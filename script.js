@@ -40,16 +40,26 @@ class Student {
     const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
     const schedule = days.map((day) => new Schedule(day));
 
-    for (let i = 9; i <= 17; i++) {
-      const timeField = `Please list times you are UNAVAILABLE to host (meetings, work, other commitments) [${i}:00am-${
-        i + 1
-      }:00am]`;
-      const className = data[timeField];
-      if (className) {
-        const timeSlot = new TimeSlot(`${i}:00am`, `${i + 1}:00am`, className);
-        for (let scheduleDay of schedule) {
-          scheduleDay.addTimeSlot(timeSlot);
-        }
+    // Extract class schedule
+    for (let i = 1; i <= 3; i++) {
+      const dayField = `Day(s) of the week [Class ${i}]`;
+      const startTimeField = `Start Time [Class ${i}]`;
+      const endTimeField = `End Time [Class ${i}]`;
+      const classNameField = `Course Name [Class ${i}]`;
+
+      const days = data[dayField] ? data[dayField].split(", ") : [];
+      const startTime = data[startTimeField];
+      const endTime = data[endTimeField];
+      const className = data[classNameField];
+
+      if (days.length && startTime && endTime && className) {
+        const timeSlot = new TimeSlot(startTime, endTime, className);
+        days.forEach((day) => {
+          const scheduleDay = schedule.find((s) => s.day === day);
+          if (scheduleDay) {
+            scheduleDay.addTimeSlot(timeSlot);
+          }
+        });
       }
     }
 
@@ -57,16 +67,17 @@ class Student {
   }
 
   toTableRow() {
-    let scheduleStr = "";
-    this.schedule.forEach((scheduleDay) =>
-      scheduleDay.timeSlots.forEach((timeSlot) => {
-        const timeSlotStr = `${scheduleDay.day} ${timeSlot.start}-${timeSlot.end}: ${timeSlot.className}`;
-        // Only add the timeSlotStr if it doesn't already exist in scheduleStr
-        if (!scheduleStr.includes(timeSlotStr)) {
-          scheduleStr += (scheduleStr ? ", " : "") + timeSlotStr;
-        }
+    let scheduleStr = this.schedule
+      .map((scheduleDay) => {
+        let timeSlotsStr = scheduleDay.timeSlots
+          .map(
+            (timeSlot) =>
+              `${timeSlot.start}-${timeSlot.end}: ${timeSlot.className}`
+          )
+          .join(", ");
+        return `${scheduleDay.day}: ${timeSlotsStr}`;
       })
-    );
+      .join(", ");
 
     return `
       <tr>
