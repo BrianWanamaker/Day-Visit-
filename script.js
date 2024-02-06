@@ -41,25 +41,28 @@ class Student {
     const schedule = days.map((day) => new Schedule(day));
 
     // Extract class schedule
-    for (let i = 1; i <= 3; i++) {
-      const dayField = `Day(s) of the week [Class ${i}]`;
-      const startTimeField = `Start Time [Class ${i}]`;
-      const endTimeField = `End Time [Class ${i}]`;
-      const classNameField = `Course Name [Class ${i}]`;
+    const fields = Object.keys(data);
+    for (let i = 0; i < fields.length; i++) {
+      const dayField = fields[i];
+      const startTimeField = fields[i + 1];
+      const endTimeField = fields[i + 2];
+      const classNameField = fields[i + 3];
 
-      const days = data[dayField] ? data[dayField].split(", ") : [];
-      const startTime = data[startTimeField];
-      const endTime = data[endTimeField];
-      const className = data[classNameField];
+      if (days.includes(dayField)) {
+        const day = dayField;
+        const startTime = data[startTimeField];
+        const endTime = data[endTimeField];
+        const className = data[classNameField];
 
-      if (days.length && startTime && endTime && className) {
-        const timeSlot = new TimeSlot(startTime, endTime, className);
-        days.forEach((day) => {
+        if (startTime && endTime && className) {
+          const timeSlot = new TimeSlot(startTime, endTime, className);
           const scheduleDay = schedule.find((s) => s.day === day);
           if (scheduleDay) {
             scheduleDay.addTimeSlot(timeSlot);
           }
-        });
+        }
+
+        i += 3; // Skip next 3 fields
       }
     }
 
