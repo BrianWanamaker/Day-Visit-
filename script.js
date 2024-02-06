@@ -43,26 +43,30 @@ class Student {
     // Extract class schedule
     const fields = Object.keys(data);
     for (let i = 0; i < fields.length; i++) {
-      const dayField = fields[i];
-      const startTimeField = fields[i + 1];
-      const endTimeField = fields[i + 2];
-      const classNameField = fields[i + 3];
+      const field = fields[i];
 
-      if (days.includes(dayField)) {
-        const day = dayField;
-        const startTime = data[startTimeField];
-        const endTime = data[endTimeField];
-        const className = data[classNameField];
+      const dayMatches = days.filter((day) => field.includes(day));
+      if (dayMatches.length > 0) {
+        i++; // Move to the next field
+        while (
+          i < fields.length &&
+          days.every((day) => !fields[i].includes(day))
+        ) {
+          const startTime = data[fields[i]];
+          const endTime = data[fields[i + 1]];
 
-        if (startTime && endTime && className) {
-          const timeSlot = new TimeSlot(startTime, endTime, className);
-          const scheduleDay = schedule.find((s) => s.day === day);
-          if (scheduleDay) {
-            scheduleDay.addTimeSlot(timeSlot);
+          if (startTime && endTime) {
+            dayMatches.forEach((day) => {
+              const timeSlot = new TimeSlot(startTime, endTime, "Class");
+              const scheduleDay = schedule.find((s) => s.day === day);
+              if (scheduleDay) {
+                scheduleDay.addTimeSlot(timeSlot);
+              }
+            });
           }
+          i += 2; // Move to the next pair of start and end times
         }
-
-        i += 3; // Skip next 3 fields
+        i--; // Decrement i because the outer loop will increment it
       }
     }
 
