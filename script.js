@@ -77,13 +77,43 @@ class Student {
 
 let students = [];
 
-fetch("responses.json")
-  .then((response) => response.json())
-  .then((data) => {
-    students = data.map((row) => new Student(row));
-    displayData(students);
-  })
-  .catch((error) => console.error("Error:", error));
+function populateFilters(students) {
+  const majors = new Set();
+  const schools = new Set();
+  const minors = new Set();
+
+  students.forEach((student) => {
+    majors.add(student.major);
+    schools.add(student.school);
+    if (student.minor) {
+      minors.add(student.minor);
+    }
+  });
+
+  populateSelect("majorFilter", Array.from(majors));
+  populateSelect("schoolFilter", Array.from(schools));
+  populateSelect("minorFilter", Array.from(minors));
+}
+
+function populateSelect(id, options) {
+  const select = document.getElementById(id);
+  options.forEach((option) => {
+    const optionElement = document.createElement("option");
+    optionElement.value = option;
+    optionElement.text = option;
+    select.appendChild(optionElement);
+  });
+}
+
+function filterStudents(students, filters) {
+  return students.filter((student) => {
+    return (
+      (filters.major === "" || student.major === filters.major) &&
+      (filters.school === "" || student.school === filters.school) &&
+      (filters.minor === "" || student.minor === filters.minor)
+    );
+  });
+}
 
 function displayData(students) {
   const tableBody = document.querySelector("#tableData");
@@ -92,3 +122,42 @@ function displayData(students) {
     tableBody.innerHTML += student.toTableRow();
   });
 }
+
+fetch("responses.json")
+  .then((response) => response.json())
+  .then((data) => {
+    students = data.map((row) => new Student(row));
+    displayData(students);
+    populateFilters(students);
+  })
+  .catch((error) => console.error("Error:", error));
+
+document.getElementById("majorFilter").addEventListener("change", function () {
+  const filters = {
+    major: this.value,
+    school: document.getElementById("schoolFilter").value,
+    minor: document.getElementById("minorFilter").value,
+  };
+  const filteredStudents = filterStudents(students, filters);
+  displayData(filteredStudents);
+});
+
+document.getElementById("schoolFilter").addEventListener("change", function () {
+  const filters = {
+    major: document.getElementById("majorFilter").value,
+    school: this.value,
+    minor: document.getElementById("minorFilter").value,
+  };
+  const filteredStudents = filterStudents(students, filters);
+  displayData(filteredStudents);
+});
+
+document.getElementById("minorFilter").addEventListener("change", function () {
+  const filters = {
+    major: document.getElementById("majorFilter").value,
+    school: document.getElementById("schoolFilter").value,
+    minor: this.value,
+  };
+  const filteredStudents = filterStudents(students, filters);
+  displayData(filteredStudents);
+});
