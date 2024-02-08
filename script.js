@@ -107,17 +107,17 @@ function populateSelect(id, options) {
 
 function filterStudents(students, filters) {
   return students.filter((student) => {
+    console.log(`Student: ${JSON.stringify(student)}`);
     return (
-      (filters.major === "" || student.major === filters.major) &&
-      (filters.school === "" || student.school === filters.school) &&
-      (filters.minor === "" || student.minor === filters.minor)
+      (!filters.major || student.major === filters.major) &&
+      (!filters.school || student.school === filters.school) &&
+      (!filters.minor || student.minor === filters.minor)
     );
   });
 }
 
 function displayData(students) {
   console.log(`Displaying ${students.length} students`);
-
   const tableBody = document.querySelector("#tableData");
   tableBody.innerHTML = "";
   students.forEach((student) => {
@@ -165,11 +165,73 @@ document.getElementById("minorFilter").addEventListener("change", function () {
 });
 
 function applyFilters() {
-  const filters = {
-    major: document.getElementById("majorFilter").value,
-    school: document.getElementById("schoolFilter").value,
-    minor: document.getElementById("minorFilter").value,
-  };
-  const filteredStudents = filterStudents(students, filters);
-  displayData(filteredStudents);
+  // Get the selected filter values from the dropdowns
+  const nameFilter = document.getElementById("nameFilter").value;
+  const pronounsFilter = document.getElementById("pronounsFilter").value;
+  const majorFilter = document.getElementById("majorFilter").value;
+  const schoolFilter = document.getElementById("schoolFilter").value;
+  const minorFilter = document.getElementById("minorFilter").value;
+
+  // Filter the students based on the selected filter values
+  const filteredStudents = filterStudents(
+    students,
+    nameFilter,
+    pronounsFilter,
+    majorFilter,
+    schoolFilter,
+    minorFilter
+  );
+
+  // Display the filtered students
+  displayStudents(filteredStudents);
+}
+
+function filterStudents(
+  students,
+  nameFilter,
+  pronounsFilter,
+  majorFilter,
+  schoolFilter,
+  minorFilter
+) {
+  // Return the students that match the selected filters
+  return students.filter((student) => {
+    const nameMatch =
+      nameFilter === "All" || student["First and Last Name"] === nameFilter;
+    const pronounsMatch =
+      pronounsFilter === "All" ||
+      student["What are your pronouns?"] === pronounsFilter;
+    const majorMatch =
+      majorFilter === "All" || student["Major(s)"] === majorFilter;
+    const schoolMatch =
+      schoolFilter === "All" ||
+      student["Please select which school your major(s) is in."] ===
+        schoolFilter;
+    const minorMatch =
+      minorFilter === "All" ||
+      student["Minor(s) if applicable"] === minorFilter;
+    return (
+      nameMatch && pronounsMatch && majorMatch && schoolMatch && minorMatch
+    );
+  });
+}
+
+function displayStudents(students) {
+  // Clear the existing student list
+  const studentTable = document.getElementById("tableData");
+  studentTable.innerHTML = "";
+
+  // Add each student to the student list
+  students.forEach((student) => {
+    const studentRow = document.createElement("tr");
+    studentRow.innerHTML = `
+      <td>${student["First and Last Name"]}</td>
+      <td>${student["What are your pronouns?"]}</td>
+      <td>${student["Major(s)"]}</td>
+      <td>${student["Please select which school your major(s) is in."]}</td>
+      <td>${student["Minor(s) if applicable"]}</td>
+      <td>${student["Unavailable Times"]}</td>
+    `;
+    studentTable.appendChild(studentRow);
+  });
 }
