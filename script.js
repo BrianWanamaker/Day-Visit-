@@ -170,7 +170,7 @@ function displayData(students) {
   });
 }
 
-fetch("responses.json")
+fetch("Host_responses.json")
   .then((response) => response.json())
   .then((data) => {
     students = data.map((row) => new Student(row));
