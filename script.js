@@ -116,6 +116,8 @@ function filterStudents(students, filters) {
 }
 
 function displayData(students) {
+  console.log(`Displaying ${students.length} students`);
+
   const tableBody = document.querySelector("#tableData");
   tableBody.innerHTML = "";
   students.forEach((student) => {
@@ -161,3 +163,13 @@ document.getElementById("minorFilter").addEventListener("change", function () {
   const filteredStudents = filterStudents(students, filters);
   displayData(filteredStudents);
 });
+
+function applyFilters() {
+  const filters = {
+    major: document.getElementById("majorFilter").value,
+    school: document.getElementById("schoolFilter").value,
+    minor: document.getElementById("minorFilter").value,
+  };
+  const filteredStudents = filterStudents(students, filters);
+  displayData(filteredStudents);
+}
