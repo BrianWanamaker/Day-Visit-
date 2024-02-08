@@ -1,7 +1,17 @@
 class TimeSlot {
-  constructor(start, end, className, professor) {
-    this.start = start;
-    this.end = end;
+  constructor(day, startTime, endTime, className, professor) {
+    this.day = day;
+    this.dayIndex = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ].indexOf(day);
+    this.startTime = startTime;
+    this.endTime = endTime;
     this.className = className;
     this.professor = professor;
   }
@@ -18,7 +28,7 @@ class Student {
   }
 
   extractSchedule(data) {
-    const schedule = [];
+    const schedule = {};
 
     for (let i = 0; i < data["Day(s) of the Week"].length; i++) {
       if (
@@ -34,6 +44,7 @@ class Student {
 
         days.forEach((day) => {
           const timeSlot = new TimeSlot(
+            day,
             startTime,
             endTime,
             className,
@@ -51,16 +62,31 @@ class Student {
   }
 
   toTableRow() {
+    const dayOrder = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
     let scheduleStr = "";
-    for (const day in this.schedule) {
+
+    // Sort the days based on the predefined order
+    const sortedDays = Object.keys(this.schedule).sort(
+      (a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b)
+    );
+
+    sortedDays.forEach((day) => {
       let timeSlotsStr = this.schedule[day]
         .map(
           (timeSlot) =>
-            `${timeSlot.start}-${timeSlot.end}: ${timeSlot.className}`
+            `${timeSlot.startTime}-${timeSlot.endTime}: ${timeSlot.className}`
         )
         .join(", ");
       scheduleStr += `${day}: ${timeSlotsStr}<br>`;
-    }
+    });
 
     return `
       <tr>
@@ -68,7 +94,7 @@ class Student {
         <td>${this.pronouns}</td>
         <td>${this.major}</td>
         <td>${this.school}</td>
-        <td>${this.minor}</td>
+        <td>${this.minor || "N/A"}</td>
         <td>${scheduleStr}</td>
       </tr>
     `;
@@ -78,25 +104,31 @@ class Student {
 let students = [];
 
 function populateFilters(students) {
-  const majors = new Set();
-  const schools = new Set();
-  const minors = new Set();
+  const names = new Set(students.map((student) => student.name));
+  const pronouns = new Set(students.map((student) => student.pronouns));
+  const majors = new Set(students.map((student) => student.major));
+  const schools = new Set(students.map((student) => student.school));
+  const minors = new Set(
+    students.flatMap((student) => (student.minor ? [student.minor] : []))
+  );
 
-  students.forEach((student) => {
-    majors.add(student.major);
-    schools.add(student.school);
-    if (student.minor) {
-      minors.add(student.minor);
-    }
-  });
-
-  populateSelect("majorFilter", Array.from(majors));
-  populateSelect("schoolFilter", Array.from(schools));
-  populateSelect("minorFilter", Array.from(minors));
+  populateSelect("nameFilter", Array.from(names), "All Names");
+  populateSelect("pronounsFilter", Array.from(pronouns), "All Pronouns");
+  populateSelect("majorFilter", Array.from(majors), "All Majors");
+  populateSelect("schoolFilter", Array.from(schools), "All Schools");
+  populateSelect("minorFilter", Array.from(minors), "All Minors");
 }
 
-function populateSelect(id, options) {
+function populateSelect(id, options, allText = "All") {
   const select = document.getElementById(id);
+  select.innerHTML = ""; // Clear existing options first
+  // Add 'All' option with descriptive text
+  const allOptionElement = document.createElement("option");
+  allOptionElement.value = "All";
+  allOptionElement.text = allText;
+  select.appendChild(allOptionElement);
+
+  // Add other options
   options.forEach((option) => {
     const optionElement = document.createElement("option");
     optionElement.value = option;
@@ -107,17 +139,30 @@ function populateSelect(id, options) {
 
 function filterStudents(students, filters) {
   return students.filter((student) => {
-    console.log(`Student: ${JSON.stringify(student)}`);
     return (
-      (!filters.major || student.major === filters.major) &&
-      (!filters.school || student.school === filters.school) &&
-      (!filters.minor || student.minor === filters.minor)
+      (filters.name === "All" || student.name === filters.name) &&
+      (filters.pronouns === "All" || student.pronouns === filters.pronouns) &&
+      (filters.major === "All" || student.major === filters.major) &&
+      (filters.school === "All" || student.school === filters.school) &&
+      (filters.minor === "All" || student.minor === filters.minor)
     );
   });
 }
 
+function applyFilters() {
+  const filters = {
+    name: document.getElementById("nameFilter").value,
+    pronouns: document.getElementById("pronounsFilter").value,
+    major: document.getElementById("majorFilter").value,
+    school: document.getElementById("schoolFilter").value,
+    minor: document.getElementById("minorFilter").value,
+  };
+
+  const filteredStudents = filterStudents(students, filters);
+  displayData(filteredStudents);
+}
+
 function displayData(students) {
-  console.log(`Displaying ${students.length} students`);
   const tableBody = document.querySelector("#tableData");
   tableBody.innerHTML = "";
   students.forEach((student) => {
@@ -134,104 +179,4 @@ fetch("responses.json")
   })
   .catch((error) => console.error("Error:", error));
 
-document.getElementById("majorFilter").addEventListener("change", function () {
-  const filters = {
-    major: this.value,
-    school: document.getElementById("schoolFilter").value,
-    minor: document.getElementById("minorFilter").value,
-  };
-  const filteredStudents = filterStudents(students, filters);
-  displayData(filteredStudents);
-});
-
-document.getElementById("schoolFilter").addEventListener("change", function () {
-  const filters = {
-    major: document.getElementById("majorFilter").value,
-    school: this.value,
-    minor: document.getElementById("minorFilter").value,
-  };
-  const filteredStudents = filterStudents(students, filters);
-  displayData(filteredStudents);
-});
-
-document.getElementById("minorFilter").addEventListener("change", function () {
-  const filters = {
-    major: document.getElementById("majorFilter").value,
-    school: document.getElementById("schoolFilter").value,
-    minor: this.value,
-  };
-  const filteredStudents = filterStudents(students, filters);
-  displayData(filteredStudents);
-});
-
-function applyFilters() {
-  // Get the selected filter values from the dropdowns
-  const nameFilter = document.getElementById("nameFilter").value;
-  const pronounsFilter = document.getElementById("pronounsFilter").value;
-  const majorFilter = document.getElementById("majorFilter").value;
-  const schoolFilter = document.getElementById("schoolFilter").value;
-  const minorFilter = document.getElementById("minorFilter").value;
-
-  // Filter the students based on the selected filter values
-  const filteredStudents = filterStudents(
-    students,
-    nameFilter,
-    pronounsFilter,
-    majorFilter,
-    schoolFilter,
-    minorFilter
-  );
-
-  // Display the filtered students
-  displayStudents(filteredStudents);
-}
-
-function filterStudents(
-  students,
-  nameFilter,
-  pronounsFilter,
-  majorFilter,
-  schoolFilter,
-  minorFilter
-) {
-  // Return the students that match the selected filters
-  return students.filter((student) => {
-    const nameMatch =
-      nameFilter === "All" || student["First and Last Name"] === nameFilter;
-    const pronounsMatch =
-      pronounsFilter === "All" ||
-      student["What are your pronouns?"] === pronounsFilter;
-    const majorMatch =
-      majorFilter === "All" || student["Major(s)"] === majorFilter;
-    const schoolMatch =
-      schoolFilter === "All" ||
-      student["Please select which school your major(s) is in."] ===
-        schoolFilter;
-    const minorMatch =
-      minorFilter === "All" ||
-      student["Minor(s) if applicable"] === minorFilter;
-    return (
-      nameMatch && pronounsMatch && majorMatch && schoolMatch && minorMatch
-    );
-  });
-}
-
-function displayStudents(students) {
-  // Clear the existing student list
-  const studentTable = document.getElementById("tableData");
-  studentTable.innerHTML = "";
-
-  // Add each student to the student list
-  students.forEach((student) => {
-    const studentRow = document.createElement("tr");
-    studentRow.innerHTML = `
-      <td>${student["First and Last Name"]}</td>
-      <td>${student["What are your pronouns?"]}</td>
-      <td>${student["Major(s)"]}</td>
-      <td>${student["Please select which school your major(s) is in."]}</td>
-      <td>${student["Minor(s) if applicable"]}</td>
-      <td>${student["Unavailable Times"]}</td>
-    `;
-    studentTable.appendChild(studentRow);
-  });
-}
+document.getElementById("filterButton").addEventListener("click", applyFilters);
