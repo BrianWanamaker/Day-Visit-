@@ -1,28 +1,9 @@
 class TimeSlot {
-  constructor(start, end, className) {
+  constructor(start, end, className, professor) {
     this.start = start;
     this.end = end;
     this.className = className;
-  }
-}
-
-class Schedule {
-  constructor(day) {
-    this.day = day;
-    this.timeSlots = [];
-  }
-
-  addTimeSlot(timeSlot) {
-    // Only add the timeSlot if it doesn't already exist in this.timeSlots
-    if (
-      !this.timeSlots.some(
-        (existingSlot) =>
-          existingSlot.start === timeSlot.start &&
-          existingSlot.end === timeSlot.end
-      )
-    ) {
-      this.timeSlots.push(timeSlot);
-    }
+    this.professor = professor;
   }
 }
 
@@ -37,36 +18,32 @@ class Student {
   }
 
   extractSchedule(data) {
-    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-    const schedule = days.map((day) => new Schedule(day));
+    const schedule = [];
 
-    // Extract class schedule
-    const fields = Object.keys(data);
-    for (let i = 0; i < fields.length; i++) {
-      const field = fields[i];
+    for (let i = 0; i < data["Day(s) of the Week"].length; i++) {
+      if (
+        data["Day(s) of the Week"][i] &&
+        data["Start Time"][i] &&
+        data["End Time"][i]
+      ) {
+        const days = data["Day(s) of the Week"][i].split(", ");
+        const startTime = data["Start Time"][i];
+        const endTime = data["End Time"][i];
+        const className = data["Class Name and Section"][i];
+        const professor = data["Professor First and Last Name"][i];
 
-      const dayMatches = days.filter((day) => field.includes(day));
-      if (dayMatches.length > 0) {
-        i++; // Move to the next field
-        while (
-          i < fields.length &&
-          days.every((day) => !fields[i].includes(day))
-        ) {
-          const startTime = data[fields[i]];
-          const endTime = data[fields[i + 1]];
-
-          if (startTime && endTime) {
-            dayMatches.forEach((day) => {
-              const timeSlot = new TimeSlot(startTime, endTime, "Class");
-              const scheduleDay = schedule.find((s) => s.day === day);
-              if (scheduleDay) {
-                scheduleDay.addTimeSlot(timeSlot);
-              }
-            });
+        days.forEach((day) => {
+          const timeSlot = new TimeSlot(
+            startTime,
+            endTime,
+            className,
+            professor
+          );
+          if (!schedule[day]) {
+            schedule[day] = [];
           }
-          i += 2; // Move to the next pair of start and end times
-        }
-        i--; // Decrement i because the outer loop will increment it
+          schedule[day].push(timeSlot);
+        });
       }
     }
 
@@ -74,17 +51,16 @@ class Student {
   }
 
   toTableRow() {
-    let scheduleStr = this.schedule
-      .map((scheduleDay) => {
-        let timeSlotsStr = scheduleDay.timeSlots
-          .map(
-            (timeSlot) =>
-              `${timeSlot.start}-${timeSlot.end}: ${timeSlot.className}`
-          )
-          .join(", ");
-        return `${scheduleDay.day}: ${timeSlotsStr}`;
-      })
-      .join(", ");
+    let scheduleStr = "";
+    for (const day in this.schedule) {
+      let timeSlotsStr = this.schedule[day]
+        .map(
+          (timeSlot) =>
+            `${timeSlot.start}-${timeSlot.end}: ${timeSlot.className}`
+        )
+        .join(", ");
+      scheduleStr += `${day}: ${timeSlotsStr}<br>`;
+    }
 
     return `
       <tr>
@@ -97,87 +73,22 @@ class Student {
       </tr>
     `;
   }
-
-  matchesFilters(filters) {
-    return (
-      (filters.name === "All" || this.name === filters.name) &&
-      (filters.pronouns === "All" || this.pronouns === filters.pronouns) &&
-      (filters.major === "All" || this.major === filters.major) &&
-      (filters.school === "All" || this.school === filters.school) &&
-      (filters.minor === "All" || this.minor === filters.minor)
-    );
-  }
 }
 
 let students = [];
-let applyFilters;
 
-$(document).ready(function () {
-  const defaultFilters = {
-    name: "All",
-    pronouns: "All",
-    major: "All",
-    school: "All",
-    minor: "All",
-  };
+fetch("responses.json")
+  .then((response) => response.json())
+  .then((data) => {
+    students = data.map((row) => new Student(row));
+    displayData(students);
+  })
+  .catch((error) => console.error("Error:", error));
 
-  function loadData() {
-    $.ajax({
-      url: "responses_csv.csv",
-      dataType: "text",
-    }).done(successFunction);
-  }
-
-  function successFunction(data) {
-    const parsedData = $.csv.toObjects(data);
-    students = parsedData.map((row) => new Student(row));
-    populateFilters(students);
-    displayData(students, defaultFilters);
-  }
-
-  function populateFilters(students) {
-    const names = new Set(students.map((student) => student.name));
-    const pronouns = new Set(students.map((student) => student.pronouns));
-    const majors = new Set(students.map((student) => student.major));
-    const schools = new Set(students.map((student) => student.school));
-    const minors = new Set(students.map((student) => student.minor));
-
-    populateDropdown("#nameFilter", names);
-    populateDropdown("#pronounsFilter", pronouns);
-    populateDropdown("#majorFilter", majors);
-    populateDropdown("#schoolFilter", schools);
-    populateDropdown("#minorFilter", minors);
-  }
-
-  function populateDropdown(dropdownId, options) {
-    const dropdown = $(dropdownId);
-    options.forEach((option) => {
-      dropdown.append(new Option(option, option));
-    });
-  }
-
-  function displayData(students, filters) {
-    const tableBody = $("#tableData");
-    tableBody.empty();
-    students.forEach((student) => {
-      if (student.matchesFilters(filters)) {
-        tableBody.append(student.toTableRow());
-      }
-    });
-  }
-
-  applyFilters = function () {
-    const filters = {
-      name: $("#nameFilter").val(),
-      pronouns: $("#pronounsFilter").val(),
-      major: $("#majorFilter").val(),
-      school: $("#schoolFilter").val(),
-      minor: $("#minorFilter").val(),
-    };
-    displayData(students, filters);
-  };
-
-  loadData();
-});
-
-window.applyFilters = applyFilters;
+function displayData(students) {
+  const tableBody = document.querySelector("#tableData");
+  tableBody.innerHTML = "";
+  students.forEach((student) => {
+    tableBody.innerHTML += student.toTableRow();
+  });
+}
