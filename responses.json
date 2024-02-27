@@ -14,10 +14,10 @@
     "What student organizations, clubs, or activities are you a part of, if any?": "WQAQ, Chronicle, AWSM, SPB, QFS, SOC ambassador",
     "QU Email Address": "jdmoglia@quinnipiac.edu",
     "Day(s) of the Week": [
-      "Monday,Tuesday, Thursday",
+      "Monday",
+      "Tuesday, Thursday",
       "Tuesday, Thursday",
       "Tuesday",
-      "Monday",
       "",
       "",
       "",
@@ -25,10 +25,10 @@
       ""
     ],
     "Start Time": [
+      "10:00:00 AM",
       "9:30:00 AM",
       "3:30:00 PM",
       "6:30:00 PM",
-      "10:00:00 AM",
       "",
       "",
       "",
@@ -36,20 +36,20 @@
       ""
     ],
     "End Time": [
+      "6:00:00 PM",
       "10:45:00 AM",
       "4:45:00 PM",
       "9:10:00 PM",
-      "6:00:00 PM",
       "",
       "",
       "",
       ""
     ],
     "Class Name and Section": [
+      "Work",
       "WGS 301-01",
       "MSS 495-02",
       "PRR 505-01",
-      "Work",
       "",
       "",
       "",
@@ -57,6 +57,7 @@
       ""
     ],
     "Professor First and Last Name": [
+      "",
       "Melissa Kaplan",
       "Lisa Burns",
       "Andrea Obston",
