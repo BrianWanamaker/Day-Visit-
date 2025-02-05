@@ -19,7 +19,7 @@ class TimeSlot {
 
 class Student {
   constructor(data) {
-    this.name = data["First and Last Name"];
+    this.name = data["Name"];
     this.pronouns = data["What are your pronouns?"];
     this.major = data["Major(s)"];
     this.school = data["Please select which school your major(s) is in."];
